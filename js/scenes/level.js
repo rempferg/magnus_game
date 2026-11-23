@@ -231,7 +231,7 @@ MB.Scenes.Level = new Phaser.Class({
 
     const cardX = [86, 236, 386, 536];
     MB.config.UNIT_ORDER.forEach(function (kind, i) {
-      const def = C.UNITS[kind];
+      const def = this.unitDef(kind);
       const affordable = this.supply >= def.cost;
       const dps = Math.round(def.damage / def.fireRate * 1000);
       hud.add(MB.ui.addButton(this, cardX[i], 490, 140, 52,
@@ -336,9 +336,22 @@ MB.Scenes.Level = new Phaser.Class({
     }, this);
   },
 
+  // Base unit stats with any per-level overrides applied (e.g. the Stone Age
+  // Slinger trades its landmine for a flamethrower).
+  unitDef: function (kind) {
+    const base = MB.config.UNITS[kind];
+    if (!base) return null;
+    const override = this.level.unitStats && this.level.unitStats[kind];
+    if (!override) return base;
+    const def = {};
+    Object.keys(base).forEach(function (k) { def[k] = base[k]; });
+    Object.keys(override).forEach(function (k) { def[k] = override[k]; });
+    return def;
+  },
+
   trainUnit: function (kind) {
     if (this.phase !== "prepare" || this.finished) return;
-    const def = MB.config.UNITS[kind];
+    const def = this.unitDef(kind);
     if (!def) return;
     if (this.supply < def.cost) {
       MB.audio.wrong();
@@ -353,7 +366,7 @@ MB.Scenes.Level = new Phaser.Class({
   },
 
   unitName: function (kind) {
-    return (this.level.unitNames && this.level.unitNames[kind]) || MB.config.UNITS[kind].name;
+    return (this.level.unitNames && this.level.unitNames[kind]) || this.unitDef(kind).name;
   },
 
   campSlot: function (index) {
@@ -373,7 +386,7 @@ MB.Scenes.Level = new Phaser.Class({
   },
 
   addCampUnit: function (kind) {
-    const def = MB.config.UNITS[kind];
+    const def = this.unitDef(kind);
     const spot = this.campSlot(this.campUnits.length);
     const g = MB.art.drawUnit(this, kind, def, this.level.unitStyle)
       .setDepth(8)
@@ -444,7 +457,7 @@ MB.Scenes.Level = new Phaser.Class({
     C.UNIT_ORDER.forEach(function (kind) {
       const count = this.army[kind] || 0;
       for (let i = 0; i < count; i++) {
-        const def = C.UNITS[kind];
+        const def = this.unitDef(kind);
         const g = MB.art.drawUnit(this, kind, def, this.level.unitStyle).setDepth(10);
         const bar = MB.ui.addHpBar(this, 0, 0, 22, 3, {
           color: 0x7ce07c,
@@ -686,7 +699,8 @@ MB.Scenes.Level = new Phaser.Class({
     const mine = weapon === "mine";
     const nuke = weapon === "nuke";
     const minigun = weapon === "minigun";
-    const explosive = grenade || mine || nuke;
+    const flame = weapon === "flame";
+    const explosive = grenade || mine || nuke || flame;
     const stone = isPlayer && (weapon || this.level.playerProjectile) === "stone";
     const bullet = weapon === "bullet" || minigun ||
       (isPlayer && !weapon && this.level.playerProjectile === "bullet") ||
@@ -696,6 +710,9 @@ MB.Scenes.Level = new Phaser.Class({
       g = MB.art.drawGrenade(this, source.x, source.y).setDepth(20);
     } else if (mine) {
       g = MB.art.drawMine(this, source.x, source.y).setDepth(20);
+    } else if (flame) {
+      g = MB.art.drawFlame(this, source.x, source.y).setDepth(20);
+      g.setRotation(Math.atan2(target.y - source.y, target.x - source.x));
     } else if (nuke) {
       g = MB.art.drawNuke(this, source.x, source.y).setDepth(20);
       g.setRotation(Math.atan2(target.y - source.y, target.x - source.x));
@@ -721,6 +738,7 @@ MB.Scenes.Level = new Phaser.Class({
 
     let effect = null;
     if (mine) effect = { kind: "mine", blasts: source.mineBlasts || MB.config.MINES.BLASTS_TO_KILL };
+    if (flame) effect = { kind: "flame" };
     if (nuke) effect = { kind: "nuke", kills: MB.config.NUKES.KILLS };
 
     this.projectiles.push({
@@ -753,7 +771,9 @@ MB.Scenes.Level = new Phaser.Class({
     });
 
     this.shotCount++;
-    if (explosive) {
+    if (flame) {
+      MB.audio.flame();
+    } else if (explosive) {
       MB.audio.torpedoLaunch();
     } else if (this.shotCount % 4 === 1) {
       if (isPlayer) MB.audio.laser();
@@ -809,6 +829,7 @@ MB.Scenes.Level = new Phaser.Class({
 
   explode: function (x, y, radius, damage, side, stone, silent, power, instant, effect) {
     const isNuke = !!(effect && effect.kind === "nuke");
+    const isFlame = !!(effect && effect.kind === "flame");
     let visual;
     if (isNuke) {
       visual = MB.art.drawNuclearBlast(this, x, y).setDepth(28);
@@ -822,6 +843,8 @@ MB.Scenes.Level = new Phaser.Class({
         onComplete: function () { flash.destroy(); }
       });
       MB.audio.powerBoom();
+    } else if (isFlame) {
+      visual = MB.art.drawFlameBurst(this, x, y).setDepth(28);
     } else {
       // Keep huge blast radii readable on a 960x540 canvas: damage uses the
       // full radius, but the drawn effect is capped.
@@ -836,7 +859,10 @@ MB.Scenes.Level = new Phaser.Class({
       onComplete: function () { visual.destroy(); }
     });
     this.spawnHit(x, y, side, stone);
-    if (!silent && !isNuke) MB.audio.explode();
+    if (!silent && !isNuke) {
+      if (isFlame) MB.audio.flame();
+      else MB.audio.explode();
+    }
 
     const r2 = radius * radius;
     const isNukeEffect = !!(effect && effect.kind === "nuke");

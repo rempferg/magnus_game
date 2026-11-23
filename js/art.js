@@ -860,6 +860,37 @@ MB.art = (function () {
     return container;
   }
 
+  function drawFlame(scene, x, y) {
+    const container = scene.add.container(x, y);
+    const g = scene.add.graphics();
+    g.fillStyle(0xff5a1f, 0.55);
+    g.fillCircle(-2, 0, 6);
+    g.fillStyle(0xff8a2f, 0.9);
+    g.fillCircle(0, 0, 4.5);
+    g.fillStyle(0xffd24d, 1);
+    g.fillCircle(1.5, 0, 2.5);
+    g.fillStyle(0xfff4c2, 1);
+    g.fillCircle(3, 0, 1.3);
+    container.add(g);
+    return container;
+  }
+
+  function drawFlameBurst(scene, x, y) {
+    const container = scene.add.container(x, y);
+    const g = scene.add.graphics();
+    g.fillStyle(0xff5a1f, 0.45);
+    g.fillCircle(0, 0, 16);
+    g.fillStyle(0xff8a2f, 0.7);
+    g.fillCircle(-4, -2, 9);
+    g.fillCircle(4, 2, 8);
+    g.fillStyle(0xffd24d, 0.85);
+    g.fillCircle(0, -1, 5);
+    g.fillStyle(0xfff4c2, 1);
+    g.fillCircle(1, -2, 2.4);
+    container.add(g);
+    return container;
+  }
+
   function drawNuke(scene, x, y) {
     const container = scene.add.container(x, y);
     const g = scene.add.graphics();
@@ -964,6 +995,8 @@ MB.art = (function () {
     drawBullet: drawBullet,
     drawGrenade: drawGrenade,
     drawMine: drawMine,
+    drawFlame: drawFlame,
+    drawFlameBurst: drawFlameBurst,
     drawNuke: drawNuke,
     drawNuclearBlast: drawNuclearBlast,
     drawExplosion: drawExplosion,

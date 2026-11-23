@@ -20,6 +20,7 @@ MB.Levels = (function () {
     def.theme = def.theme || {};
     def.defenses = def.defenses || [];
     def.scenery = def.scenery || [];
+    def.unitStats = def.unitStats || {};
     def.startingSupply = def.startingSupply || 0;
 
     list.push(def);

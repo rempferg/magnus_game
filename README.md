@@ -28,9 +28,11 @@ uses the base stats, so it is the easiest place to learn the game.
    them:
    - **Landsknecht / Clubman / Deputy** - 1 supply, 140 HP, 27 DPS. Sturdy,
      rapid-fire minigun.
-   - **Archer / Slinger / Gunslinger** - 3 supply, 70 HP, 34 DPS. Fragile. Drops
-     landmines with a 1,000,000-pixel blast; each blast removes one tenth of an
-     enemy's HP, so ten blasts defeat it.
+   - **Archer / Gunslinger** - 3 supply, 70 HP, 34 DPS. Fragile. Drops landmines
+     with a 1,000,000-pixel blast; each blast removes one tenth of an enemy's HP,
+     so ten blasts defeat it.
+   - **Slinger** (Stone Age only) - 3 supply, 70 HP, 29 DPS. A short-range
+     flamethrower with a 30-pixel blast that burns clustered dinos.
    - **Musketeer** - 4 supply, 85 HP, 24 DPS. Fires nuclear missiles with a
      5,000,000-pixel blast and a big mushroom cloud. Each blast defeats the two
      closest enemies outright and heavily damages the rest.

@@ -12,6 +12,18 @@ MB.Levels.define({
   // Stone Age reskin of the same two unit roles.
   unitStyle: "stoneage",
   unitNames: { landsknecht: "Clubman", archer: "Slinger" },
+  // The Slinger swaps the Archer's landmine for a short-range flamethrower.
+  unitStats: {
+    archer: {
+      projectile: "flame",
+      projectileSpeed: 420,
+      damage: 4,
+      fireRate: 140,
+      range: 145,
+      splash: 30,
+      desc: "Short-range flamethrower that burns clustered dinos."
+    }
+  },
   playerProjectile: "stone",
   enemyWord: { one: "Dino", many: "Dinos", verb: "routed" },
   battleLine: "Keep throwing stones until the dinos run away!",

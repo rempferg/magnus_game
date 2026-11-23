@@ -193,9 +193,10 @@ If you replace the ground entirely, keep the visual road aligned with the
 
 A unit in `MB.config.UNITS` can define its own weapon:
 
-- `projectile: "stone" | "bullet" | "minigun" | "grenade" | "mine" | "nuke"`
-  overrides the level's `playerProjectile` for that unit. `minigun` fires very
-  fast, low-damage bullets; the Clubman uses it.
+- `projectile: "stone" | "bullet" | "minigun" | "grenade" | "mine" | "flame" |
+  "nuke"` overrides the level's `playerProjectile` for that unit. `minigun` fires
+  very fast, low-damage bullets; the Clubman uses it. `flame` fires short-range
+  flame jets with a small `splash`.
 - `projectileSpeed` sets the travel speed of its shots.
 - `splash` sets the explosion radius in canvas pixels; every enemy inside it
   takes the shot's damage. The Grenadier uses 2000, the Archer's mine uses
@@ -208,10 +209,15 @@ A unit in `MB.config.UNITS` can define its own weapon:
   to defeat an enemy. Each mine blast deals `ceil(enemy.maxHp / mineBlasts)`,
   so the Archer's 10 blasts kill any enemy regardless of size.
 
+A level can override any of these stats for a specific unit through its
+`unitStats` map, e.g. `unitStats: { archer: { projectile: "flame", ... } }`. The
+Stone Age level uses this to turn the Archer reskin (the Slinger) into a
+flamethrower while other levels keep its landmine.
+
 Nukes defeat the two closest enemies in the blast outright (see
 `MB.config.NUKES.KILLS`) and damage the rest. Clubmen fire rapid minigun
-bullets, Archers drop landmines and Grenadiers lob grenades in every level.
-Other units keep the level's `playerProjectile` style.
+bullets, Archers drop landmines, Slingers breathe fire and Grenadiers lob
+grenades. Other units keep the level's `playerProjectile` style.
 
 ## Power meter
 

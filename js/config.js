@@ -11,7 +11,7 @@ MB.config = (function () {
   // Appended to asset URLs by the Dockerfile. Bump it whenever js/, style.css
   // or fonts/ change, because those files are served with a one-year immutable
   // cache while index.html itself is never cached.
-  const VERSION = "V15";
+  const VERSION = "V16";
 
   // Supply is earned by answering German questions. Units spend it, so a unit
   // that costs 3 needs three correct answers before it can be trained.
@@ -189,6 +189,11 @@ MB.config = (function () {
     BLASTS_TO_KILL: 10
   };
 
+  // The Stone Age Slinger trades the mine for a short-range flamethrower.
+  const FLAMES = {
+    RADIUS: 30
+  };
+
   // The Musketeer fires nuclear missiles: a huge blast that damages every
   // enemy but does not kill outright, so several hits are needed.
   const NUKES = {
@@ -221,6 +226,7 @@ MB.config = (function () {
     POWER: POWER,
     STARS: STARS,
     MINES: MINES,
+    FLAMES: FLAMES,
     NUKES: NUKES,
     ENEMY_SCALING: ENEMY_SCALING,
     enemyScale: enemyScale,
