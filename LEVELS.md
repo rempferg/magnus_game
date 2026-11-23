@@ -200,9 +200,19 @@ A unit in `MB.config.UNITS` can define its own weapon:
   canvas pixels; every enemy inside it takes the shot's damage. The Grenadier
   uses 2000, which reaches across the whole 960x540 map. The drawn explosion is
   capped at 140 px so very large blasts stay readable.
+- `instantKill: true` makes a grenade set every enemy inside the blast to 0 HP
+  instead of applying the damage value. The Grenadier uses this.
 
 Musketeers fire bullets and Grenadiers lob grenades in every level. Other
 units keep the level's `playerProjectile` style.
+
+## Power meter
+
+Hits from the Musketeer and Grenadier charge a shared POWER meter shown in the
+top bar. Each unit's `PER_HIT` value lives in `MB.config.POWER` along with
+`MAX`, `DAMAGE` and `BLAST_RADIUS`. At 100% the army automatically unleashes a
+POWER BARRAGE: explosions on every remaining defense, staggered by 90 ms. The
+meter resets on a new attack and when rebuilding the army.
 
 ## Balance
 

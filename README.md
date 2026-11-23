@@ -26,7 +26,11 @@ The game ships with four levels:
      more damage.
    - **Musketeer** - 4 supply, 85 HP, 27 DPS. Long range, heavy bullets.
    - **Grenadier** - 5 supply, 120 HP, 16 DPS. Slow grenades with a 2000-pixel
-     blast that reaches every enemy on the map.
+     blast that instantly defeats every enemy on the map.
+
+   Musketeer and Grenadier hits fill the **POWER** meter in the top bar. When it
+   reaches 100%, the army automatically fires a POWER BARRAGE at every enemy
+   still standing.
 
    Each purchase appears in your camp immediately. Press **ATTACK** to send
    the whole army down the road.

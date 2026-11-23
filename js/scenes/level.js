@@ -63,6 +63,9 @@ MB.Scenes.Level = new Phaser.Class({
     this.quizOpen = false;
     this.damageTexts = 0;
     this.shotCount = 0;
+    this.power = 0;
+    this.powerBarG = null;
+    this.powerText = null;
     this.dinoBites = 0;
     this.overlay = null;
     this.toastText = null;
@@ -148,6 +151,8 @@ MB.Scenes.Level = new Phaser.Class({
       this.hud.destroy(true);
       this.hud = null;
       this.battleStatusText = null;
+      this.powerBarG = null;
+      this.powerText = null;
     }
 
     const hud = this.add.container(0, 0).setDepth(100);
@@ -183,6 +188,15 @@ MB.Scenes.Level = new Phaser.Class({
       color: "#ffd24d",
       origin: 1
     }));
+
+    this.powerText = MB.ui.addText(this, 165, 21, "POWER 0%", {
+      fontSize: "8px",
+      color: "#b9d6ff"
+    });
+    hud.add(this.powerText);
+    this.powerBarG = this.add.graphics().setPosition(215, 16);
+    hud.add(this.powerBarG);
+    this.updatePowerMeter();
 
     hud.add(this.add.rectangle(480, 486, 960, 108, 0x081009, 0.96));
     hud.add(this.add.rectangle(480, 432, 960, 2, 0x4c6747, 1));
@@ -256,6 +270,64 @@ MB.Scenes.Level = new Phaser.Class({
 
   refreshHud: function () {
     this.buildHud();
+  },
+
+  powerConfig: function () {
+    // Tolerate a stale cached config.js while a fresh deploy rolls out.
+    return MB.config.POWER || {
+      MAX: 100, PER_HIT: {}, DAMAGE: 60, BLAST_RADIUS: 60
+    };
+  },
+
+  updatePowerMeter: function () {
+    const C = this.powerConfig();
+    if (!this.powerBarG) return;
+    const ratio = Math.max(0, Math.min(1, this.power / C.MAX));
+    const g = this.powerBarG;
+    g.clear();
+    g.fillStyle(0x1b2a18, 1);
+    g.fillRoundedRect(0, 0, 120, 10, 3);
+    g.lineStyle(2, 0x6f8a5c, 1);
+    g.strokeRoundedRect(0, 0, 120, 10, 3);
+    if (ratio > 0) {
+      g.fillStyle(ratio >= 1 ? 0xffd24d : 0x7fd4ff, 1);
+      g.fillRoundedRect(1, 1, Math.max(2, 118 * ratio), 8, 2);
+    }
+    if (this.powerText) {
+      this.powerText.setText(ratio >= 1
+        ? "POWER READY!"
+        : "POWER " + Math.floor(ratio * 100) + "%");
+      this.powerText.setColor(ratio >= 1 ? "#ffd24d" : "#b9d6ff");
+    }
+  },
+
+  addPower: function (amount) {
+    if (!amount || this.phase !== "battle") return;
+    const C = this.powerConfig();
+    this.power = Math.min(C.MAX, this.power + amount);
+    this.updatePowerMeter();
+    if (this.power >= C.MAX) this.unleashPower();
+  },
+
+  unleashPower: function () {
+    const C = this.powerConfig();
+    this.power = 0;
+    this.updatePowerMeter();
+    MB.audio.powerBoom();
+    this.toast("POWER BARRAGE!", "#ffd24d");
+
+    const targets = this.defenses.filter(function (d) {
+      return !d.dead && d.hp > 0;
+    });
+    targets.forEach(function (d, i) {
+      this.time.delayedCall(i * 90, function () {
+        if (d.dead) return;
+        this.explode(
+          d.x, d.y, C.BLAST_RADIUS, C.DAMAGE,
+          "player", false, true
+        );
+      }.bind(this));
+    }, this);
   },
 
   trainUnit: function (kind) {
@@ -346,6 +418,7 @@ MB.Scenes.Level = new Phaser.Class({
       return;
     }
     this.phase = "battle";
+    this.power = 0;
     this.defeatTimer = 0;
     MB.audio.unlock();
     MB.audio.click();
@@ -391,6 +464,7 @@ MB.Scenes.Level = new Phaser.Class({
           projectile: def.projectile || null,
           projectileSpeed: def.projectileSpeed || 0,
           splash: def.splash || 0,
+          instantKill: !!def.instantKill,
           cooldown: Math.random() * def.fireRate,
           cooldownMax: def.fireRate,
           progress: 0,
@@ -640,6 +714,10 @@ MB.Scenes.Level = new Phaser.Class({
       bullet: bullet,
       grenade: grenade,
       splash: grenade ? (source.splash || 48) : 0,
+      instant: grenade && !!source.instantKill,
+      power: isPlayer && source.kind
+        ? (this.powerConfig().PER_HIT[source.kind] || 0)
+        : 0,
       spin: (stone || grenade)
         ? (Math.random() < 0.5 ? -1 : 1) * (4 + Math.random() * 3)
         : 0,
@@ -681,10 +759,14 @@ MB.Scenes.Level = new Phaser.Class({
       if (dist <= step + 4) {
         p.g.destroy();
         if (p.splash > 0) {
-          this.explode(target.x, target.y, p.splash, p.damage, p.side, p.stone);
+          this.explode(
+            target.x, target.y, p.splash, p.damage, p.side, p.stone,
+            false, p.power, p.instant
+          );
         } else {
           this.spawnHit(target.x, target.y, p.side, p.stone);
           this.hit(target, p.damage, p.side);
+          this.addPower(p.power);
         }
       } else {
         p.x += (dx / dist) * step;
@@ -704,7 +786,7 @@ MB.Scenes.Level = new Phaser.Class({
     this.projectiles = survivors;
   },
 
-  explode: function (x, y, radius, damage, side, stone) {
+  explode: function (x, y, radius, damage, side, stone, silent, power, instant) {
     // Keep huge blast radii readable on a 960x540 canvas: damage uses the full
     // radius, but the drawn effect is capped.
     const visual = MB.art.drawExplosion(this, x, y, Math.min(radius, 140)).setDepth(28);
@@ -717,7 +799,7 @@ MB.Scenes.Level = new Phaser.Class({
       onComplete: function () { visual.destroy(); }
     });
     this.spawnHit(x, y, side, stone);
-    MB.audio.explode();
+    if (!silent) MB.audio.explode();
 
     const r2 = radius * radius;
     for (let i = 0; i < this.defenses.length; i++) {
@@ -725,16 +807,17 @@ MB.Scenes.Level = new Phaser.Class({
       if (d.dead || d.hp <= 0) continue;
       const dx = d.x - x;
       const dy = d.y - y;
-      if (dx * dx + dy * dy <= r2) this.hit(d, damage, side);
+      if (dx * dx + dy * dy <= r2) this.hit(d, damage, side, instant);
     }
+    this.addPower(power);
   },
 
-  hit: function (target, damage, side) {
+  hit: function (target, damage, side, instant) {
     if (!target || target.dead || target.hp <= 0) return;
 
     if (target.dino) {
       if (side !== "player") return;
-      target.hp -= damage;
+      target.hp -= instant ? target.hp : damage;
       target.stonesTaken += 1;
       if (target.bar) {
         target.bar.setAlpha(1);
@@ -747,7 +830,7 @@ MB.Scenes.Level = new Phaser.Class({
       return;
     }
 
-    target.hp -= damage;
+    target.hp -= instant ? target.hp : damage;
     if (target.bar) target.bar.setRatio(target.hp / target.maxHp);
     this.spawnDamage(target.x, target.y - 14, damage, side);
 
@@ -1124,6 +1207,7 @@ MB.Scenes.Level = new Phaser.Class({
 
     this.phase = "prepare";
     this.finished = false;
+    this.power = 0;
     this.defeatTimer = 0;
 
     this.units.forEach(function (u) {

@@ -11,7 +11,7 @@ MB.config = (function () {
   // Appended to asset URLs by the Dockerfile. Bump it whenever js/, style.css
   // or fonts/ change, because those files are served with a one-year immutable
   // cache while index.html itself is never cached.
-  const VERSION = "V8";
+  const VERSION = "V10";
 
   // Supply is earned by answering German questions. Units spend it, so a unit
   // that costs 3 needs three correct answers before it can be trained.
@@ -76,7 +76,8 @@ MB.config = (function () {
       projectile: "grenade",
       projectileSpeed: 250,
       splash: 2000,
-      desc: "Huge blast that hits every enemy on the map."
+      instantKill: true,
+      desc: "Huge blast that instantly defeats every enemy on the map."
     }
   };
 
@@ -157,11 +158,21 @@ MB.config = (function () {
     }
   };
 
+  // Hits from the musketeer and grenadier fill a shared meter. A full meter
+  // automatically unleashes a barrage on every remaining defense.
+  const POWER = {
+    MAX: 100,
+    PER_HIT: { musketeer: 14, grenadier: 22 },
+    DAMAGE: 60,
+    BLAST_RADIUS: 60
+  };
+
   return {
     WIDTH: WIDTH,
     HEIGHT: HEIGHT,
     FONT: FONT,
     VERSION: VERSION,
+    POWER: POWER,
     TITLE: "German Attack",
     SUPPLY_PER_ANSWER: SUPPLY_PER_ANSWER,
     UNITS: UNITS,
