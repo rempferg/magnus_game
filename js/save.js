@@ -24,7 +24,8 @@ MB.save = (function () {
           if (rec && rec.completed) {
             levels[id] = {
               completed: true,
-              completedAt: rec.completedAt || 0
+              completedAt: rec.completedAt || 0,
+              stars: clampStars(rec.stars)
             };
           }
         });
@@ -51,16 +52,29 @@ MB.save = (function () {
     }
   }
 
+  function clampStars(value) {
+    const n = Number(value);
+    if (!isFinite(n) || n <= 0) return 0;
+    return Math.min(MB.config.STARS ? MB.config.STARS.MAX : 3, Math.floor(n));
+  }
+
   function isComplete(state, levelId) {
     return !!(state.levels[levelId] && state.levels[levelId].completed);
   }
 
-  function completeLevel(levelId) {
+  function getStars(state, levelId) {
+    const rec = state.levels[levelId];
+    return rec ? clampStars(rec.stars) : 0;
+  }
+
+  function completeLevel(levelId, stars) {
     const state = load();
     const prev = state.levels[levelId] || {};
     state.levels[levelId] = {
       completed: true,
-      completedAt: prev.completedAt || Date.now()
+      completedAt: prev.completedAt || Date.now(),
+      // Keep the best result, so replaying a level never loses stars.
+      stars: Math.max(clampStars(prev.stars), clampStars(stars))
     };
     save(state);
     return state;
@@ -72,6 +86,7 @@ MB.save = (function () {
     save: save,
     clear: clear,
     isComplete: isComplete,
+    getStars: getStars,
     completeLevel: completeLevel
   };
 })();

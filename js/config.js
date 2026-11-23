@@ -11,7 +11,7 @@ MB.config = (function () {
   // Appended to asset URLs by the Dockerfile. Bump it whenever js/, style.css
   // or fonts/ change, because those files are served with a one-year immutable
   // cache while index.html itself is never cached.
-  const VERSION = "V10";
+  const VERSION = "V15";
 
   // Supply is earned by answering German questions. Units spend it, so a unit
   // that costs 3 needs three correct answers before it can be trained.
@@ -23,14 +23,16 @@ MB.config = (function () {
       name: "Landsknecht",
       cost: 1,
       hp: 140,
-      damage: 9,
-      fireRate: 900,
-      range: 150,
+      damage: 3,
+      fireRate: 110,
+      range: 165,
       speed: 62,
       size: 10,
       color: 0x6f9fe0,
       accent: 0xdbe8ff,
-      desc: "Sturdy frontline fighter."
+      projectile: "minigun",
+      projectileSpeed: 720,
+      desc: "Sturdy frontline fighter with a rapid-fire minigun."
     },
     archer: {
       id: "archer",
@@ -44,22 +46,28 @@ MB.config = (function () {
       size: 9,
       color: 0x75c46f,
       accent: 0xe6ffd9,
-      desc: "Fragile, high damage."
+      projectile: "mine",
+      projectileSpeed: 320,
+      splash: 1000000,
+      mineBlasts: 10,
+      desc: "Fragile. Drops map-wide mines that defeat enemies in ten blasts."
     },
     musketeer: {
       id: "musketeer",
       name: "Musketeer",
       cost: 4,
       hp: 85,
-      damage: 40,
-      fireRate: 1500,
+      damage: 60,
+      fireRate: 2500,
       range: 260,
       speed: 60,
       size: 9,
       color: 0xb98ad9,
       accent: 0xf2dcff,
-      projectile: "bullet",
-      desc: "Long-range, heavy shot."
+      projectile: "nuke",
+      projectileSpeed: 300,
+      splash: 5000000,
+      desc: "Long-range nuclear missile. Huge blast, but needs several hits."
     },
     grenadier: {
       id: "grenadier",
@@ -167,12 +175,55 @@ MB.config = (function () {
     BLAST_RADIUS: 60
   };
 
+  // Taking the treasure awards stars. One star for the win, two if at least
+  // half the army survives, three if nobody is lost.
+  const STARS = {
+    MAX: 3,
+    TWO_STAR_RATIO: 0.5
+  };
+
+  // The Archer drops landmines instead of arrows. A mine reaches the whole map
+  // and removes one tenth of an enemy's HP per blast, so ten blasts defeat it.
+  const MINES = {
+    RADIUS: 1000000,
+    BLASTS_TO_KILL: 10
+  };
+
+  // The Musketeer fires nuclear missiles: a huge blast that damages every
+  // enemy but does not kill outright, so several hits are needed.
+  const NUKES = {
+    RADIUS: 5000000,
+    KILLS: 2
+  };
+
+  // Every later map has stronger enemies. Level 1 uses the base DEFENSES/DINOS
+  // values; each level number after that adds these fractions.
+  const ENEMY_SCALING = {
+    HP: 0.25,
+    DAMAGE: 0.2,
+    FIRE_RATE: -0.06
+  };
+
+  function enemyScale(levelNumber) {
+    const tier = Math.max(0, (Number(levelNumber) || 1) - 1);
+    return {
+      hp: 1 + ENEMY_SCALING.HP * tier,
+      damage: 1 + ENEMY_SCALING.DAMAGE * tier,
+      fireRate: Math.max(0.4, 1 + ENEMY_SCALING.FIRE_RATE * tier)
+    };
+  }
+
   return {
     WIDTH: WIDTH,
     HEIGHT: HEIGHT,
     FONT: FONT,
     VERSION: VERSION,
     POWER: POWER,
+    STARS: STARS,
+    MINES: MINES,
+    NUKES: NUKES,
+    ENEMY_SCALING: ENEMY_SCALING,
+    enemyScale: enemyScale,
     TITLE: "German Attack",
     SUPPLY_PER_ANSWER: SUPPLY_PER_ANSWER,
     UNITS: UNITS,

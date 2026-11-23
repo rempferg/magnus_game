@@ -66,6 +66,7 @@ MB.Scenes.Level = new Phaser.Class({
     this.power = 0;
     this.powerBarG = null;
     this.powerText = null;
+    this.levelStars = 0;
     this.dinoBites = 0;
     this.overlay = null;
     this.toastText = null;
@@ -94,11 +95,16 @@ MB.Scenes.Level = new Phaser.Class({
   buildDefenses: function () {
     const structures = MB.config.DEFENSES;
     const dinos = MB.config.DINOS;
+    const scale = MB.config.enemyScale(this.level.number);
     this.defenses = this.level.defenses.map(function (spot, index) {
       const isDino = !!dinos[spot.type];
       const base = isDino ? dinos[spot.type] : (structures[spot.type] || structures.tower);
       const stats = Object.assign({}, base, spot);
-      const maxHp = stats.hp;
+      // Later maps scale HP, damage and firing speed. Per-spot overrides in the
+      // level data are applied first, so the whole map scales together.
+      const maxHp = Math.round(stats.hp * scale.hp);
+      const damage = Math.round(stats.damage * scale.damage);
+      const fireRate = Math.round(stats.fireRate * scale.fireRate);
       const visual = isDino
         ? MB.art.drawDino(this, stats, this.level.theme, spot.type)
         : MB.art.drawDefense(this, stats, this.level.theme);
@@ -123,9 +129,9 @@ MB.Scenes.Level = new Phaser.Class({
         homeY: spot.y,
         hp: maxHp,
         maxHp: maxHp,
-        damage: stats.damage,
+        damage: damage,
         range: stats.range,
-        fireRate: stats.fireRate,
+        fireRate: fireRate,
         projectileSpeed: stats.projectileSpeed,
         aggroRange: stats.aggroRange || 0,
         speed: stats.speed || 0,
@@ -465,6 +471,7 @@ MB.Scenes.Level = new Phaser.Class({
           projectileSpeed: def.projectileSpeed || 0,
           splash: def.splash || 0,
           instantKill: !!def.instantKill,
+          mineBlasts: def.mineBlasts || 0,
           cooldown: Math.random() * def.fireRate,
           cooldownMax: def.fireRate,
           progress: 0,
@@ -676,13 +683,22 @@ MB.Scenes.Level = new Phaser.Class({
     // level's projectile style (stones in Stone Age, bullets in High Noon).
     const weapon = isPlayer ? source.projectile : null;
     const grenade = weapon === "grenade";
+    const mine = weapon === "mine";
+    const nuke = weapon === "nuke";
+    const minigun = weapon === "minigun";
+    const explosive = grenade || mine || nuke;
     const stone = isPlayer && (weapon || this.level.playerProjectile) === "stone";
-    const bullet = weapon === "bullet" ||
+    const bullet = weapon === "bullet" || minigun ||
       (isPlayer && !weapon && this.level.playerProjectile === "bullet") ||
       (!isPlayer && this.level.enemyProjectile === "bullet");
     let g;
     if (grenade) {
       g = MB.art.drawGrenade(this, source.x, source.y).setDepth(20);
+    } else if (mine) {
+      g = MB.art.drawMine(this, source.x, source.y).setDepth(20);
+    } else if (nuke) {
+      g = MB.art.drawNuke(this, source.x, source.y).setDepth(20);
+      g.setRotation(Math.atan2(target.y - source.y, target.x - source.x));
     } else if (stone) {
       g = MB.art.drawStone(this, source.x, source.y).setDepth(20);
     } else if (bullet) {
@@ -690,7 +706,7 @@ MB.Scenes.Level = new Phaser.Class({
         this,
         source.x,
         source.y,
-        isPlayer ? 0xffe6a8 : 0xffb36b
+        minigun ? 0xbfe9ff : (isPlayer ? 0xffe6a8 : 0xffb36b)
       ).setDepth(20);
       g.setRotation(Math.atan2(target.y - source.y, target.x - source.x));
     } else {
@@ -703,6 +719,10 @@ MB.Scenes.Level = new Phaser.Class({
       ).setDepth(20);
     }
 
+    let effect = null;
+    if (mine) effect = { kind: "mine", blasts: source.mineBlasts || MB.config.MINES.BLASTS_TO_KILL };
+    if (nuke) effect = { kind: "nuke", kills: MB.config.NUKES.KILLS };
+
     this.projectiles.push({
       g: g,
       x: source.x,
@@ -713,15 +733,16 @@ MB.Scenes.Level = new Phaser.Class({
       stone: stone,
       bullet: bullet,
       grenade: grenade,
-      splash: grenade ? (source.splash || 48) : 0,
+      effect: effect,
+      splash: explosive ? (source.splash || 48) : 0,
       instant: grenade && !!source.instantKill,
       power: isPlayer && source.kind
         ? (this.powerConfig().PER_HIT[source.kind] || 0)
         : 0,
-      spin: (stone || grenade)
+      spin: (stone || grenade || mine)
         ? (Math.random() < 0.5 ? -1 : 1) * (4 + Math.random() * 3)
         : 0,
-      arc: grenade ? 22 : 0,
+      arc: grenade ? 22 : (mine ? 8 : (nuke ? 14 : 0)),
       launchDist: Math.max(1, Math.sqrt(
         (target.x - source.x) * (target.x - source.x) +
         (target.y - source.y) * (target.y - source.y)
@@ -732,7 +753,7 @@ MB.Scenes.Level = new Phaser.Class({
     });
 
     this.shotCount++;
-    if (grenade) {
+    if (explosive) {
       MB.audio.torpedoLaunch();
     } else if (this.shotCount % 4 === 1) {
       if (isPlayer) MB.audio.laser();
@@ -761,7 +782,7 @@ MB.Scenes.Level = new Phaser.Class({
         if (p.splash > 0) {
           this.explode(
             target.x, target.y, p.splash, p.damage, p.side, p.stone,
-            false, p.power, p.instant
+            false, p.power, p.instant, p.effect
           );
         } else {
           this.spawnHit(target.x, target.y, p.side, p.stone);
@@ -786,10 +807,26 @@ MB.Scenes.Level = new Phaser.Class({
     this.projectiles = survivors;
   },
 
-  explode: function (x, y, radius, damage, side, stone, silent, power, instant) {
-    // Keep huge blast radii readable on a 960x540 canvas: damage uses the full
-    // radius, but the drawn effect is capped.
-    const visual = MB.art.drawExplosion(this, x, y, Math.min(radius, 140)).setDepth(28);
+  explode: function (x, y, radius, damage, side, stone, silent, power, instant, effect) {
+    const isNuke = !!(effect && effect.kind === "nuke");
+    let visual;
+    if (isNuke) {
+      visual = MB.art.drawNuclearBlast(this, x, y).setDepth(28);
+      this.cameras.main.shake(260, 0.008);
+      const flash = this.add.rectangle(
+        MB.config.WIDTH / 2, MB.config.HEIGHT / 2,
+        MB.config.WIDTH, MB.config.HEIGHT, 0xfff4c2, 0.32
+      ).setDepth(27);
+      this.tweens.add({
+        targets: flash, alpha: 0, duration: 320,
+        onComplete: function () { flash.destroy(); }
+      });
+      MB.audio.powerBoom();
+    } else {
+      // Keep huge blast radii readable on a 960x540 canvas: damage uses the
+      // full radius, but the drawn effect is capped.
+      visual = MB.art.drawExplosion(this, x, y, Math.min(radius, 140)).setDepth(28);
+    }
     this.tweens.add({
       targets: visual,
       scaleX: 1.3,
@@ -799,16 +836,34 @@ MB.Scenes.Level = new Phaser.Class({
       onComplete: function () { visual.destroy(); }
     });
     this.spawnHit(x, y, side, stone);
-    if (!silent) MB.audio.explode();
+    if (!silent && !isNuke) MB.audio.explode();
 
     const r2 = radius * radius;
+    const isNukeEffect = !!(effect && effect.kind === "nuke");
+    const kills = isNukeEffect
+      ? (effect.kills || MB.config.NUKES.KILLS)
+      : 0;
+    const hitList = [];
     for (let i = 0; i < this.defenses.length; i++) {
       const d = this.defenses[i];
       if (d.dead || d.hp <= 0) continue;
       const dx = d.x - x;
       const dy = d.y - y;
-      if (dx * dx + dy * dy <= r2) this.hit(d, damage, side, instant);
+      const dist2 = dx * dx + dy * dy;
+      if (dist2 <= r2) hitList.push({ d: d, dist2: dist2 });
     }
+    // A nuke defeats the two closest enemies outright; everyone else in the
+    // huge blast still takes heavy damage.
+    if (kills > 0) hitList.sort(function (a, b) { return a.dist2 - b.dist2; });
+    hitList.forEach(function (entry, i) {
+      const d = entry.d;
+      // A landmine removes one tenth of the target's own HP per blast, so
+      // every enemy dies on the tenth blast regardless of its size.
+      const hitDamage = effect && effect.kind === "mine"
+        ? Math.ceil(d.maxHp / effect.blasts)
+        : damage;
+      this.hit(d, hitDamage, side, i < kills || instant);
+    }, this);
     this.addPower(power);
   },
 
@@ -1044,6 +1099,19 @@ MB.Scenes.Level = new Phaser.Class({
     }
   },
 
+  // Treasure prize: one star for the win, two for keeping half the army alive,
+  // three for losing nobody. Replays can only improve the saved result.
+  calculateStars: function () {
+    const total = MB.config.UNIT_ORDER.reduce(function (sum, id) {
+      return sum + this.army[id];
+    }.bind(this), 0);
+    const alive = this.units.filter(function (u) { return !u.dead; }).length;
+    const S = MB.config.STARS;
+    if (!total || alive >= total) return S.MAX;
+    if (alive / total >= S.TWO_STAR_RATIO) return 2;
+    return 1;
+  },
+
   finish: function (victory) {
     if (this.phase === "done") return;
     this.phase = "done";
@@ -1051,7 +1119,8 @@ MB.Scenes.Level = new Phaser.Class({
     if (this.hud) this.hud.setVisible(false);
 
     if (victory) {
-      MB.save.completeLevel(this.level.id);
+      this.levelStars = this.calculateStars();
+      MB.save.completeLevel(this.level.id, this.levelStars);
       MB.audio.victory();
     } else {
       MB.audio.defeat();
@@ -1077,7 +1146,7 @@ MB.Scenes.Level = new Phaser.Class({
       border: victory ? 0x8fc47a : 0xd06a5a
     });
 
-    const title = MB.ui.addText(this, C.WIDTH / 2, 148, victory
+    const title = MB.ui.addText(this, C.WIDTH / 2, 140, victory
       ? (next ? "TREASURE TAKEN!" : "CAMPAIGN COMPLETE!")
       : "ATTACK FAILED", {
       fontSize: "28px",
@@ -1086,12 +1155,22 @@ MB.Scenes.Level = new Phaser.Class({
       strokeThickness: 5
     });
 
-    const subtitle = MB.ui.addText(this, C.WIDTH / 2, 192, victory
+    const subtitle = MB.ui.addText(this, C.WIDTH / 2, 178, victory
       ? (next ? "LEVEL " + this.level.number + " CLEARED" : "ALL " + MB.Levels.count() + " MAPS CLEARED")
       : "Your army fell. Damaged defenses stay damaged.", {
       fontSize: "10px",
       color: victory ? "#9fe08a" : "#e0c0b8"
     });
+
+    let prizeLabel = null;
+    let prizeStars = null;
+    if (victory) {
+      prizeLabel = MB.ui.addText(this, C.WIDTH / 2, 206, "TREASURE PRIZE", {
+        fontSize: "8px",
+        color: "#cfe0c0"
+      });
+      prizeStars = MB.art.drawStars(this, C.WIDTH / 2, 230, this.levelStars, 12);
+    }
 
     const totalUnits = MB.config.UNIT_ORDER.reduce(function (sum, id) {
       return sum + this.army[id];
@@ -1110,10 +1189,10 @@ MB.Scenes.Level = new Phaser.Class({
           "Supply left: " + this.supply
         ];
 
-    const stats = MB.ui.addText(this, C.WIDTH / 2, 260, lines.join("\n"), {
+    const stats = MB.ui.addText(this, C.WIDTH / 2, victory ? 274 : 244, lines.join("\n"), {
       fontSize: "9px",
       color: "#dfe6d2",
-      lineSpacing: 16
+      lineSpacing: victory ? 12 : 16
     });
 
     const note = MB.ui.addText(this, C.WIDTH / 2, 330, victory
@@ -1196,7 +1275,10 @@ MB.Scenes.Level = new Phaser.Class({
     }
 
     this.overlay = this.add.container(0, 0).setDepth(200);
-    this.overlay.add([dim, panel, title, subtitle, stats, note].concat(buttons));
+    const parts = [dim, panel, title, subtitle, stats, note];
+    if (prizeLabel) parts.push(prizeLabel);
+    if (prizeStars) parts.push(prizeStars);
+    this.overlay.add(parts.concat(buttons));
   },
 
   rebuildArmy: function () {

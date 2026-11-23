@@ -121,7 +121,9 @@ MB.Scenes.Levels = new Phaser.Class({
     const map = MB.art.drawMiniMap(this, level, cx - 122, cy, 150, 100);
     if (!unlocked) map.setAlpha(0.32);
 
-    MB.ui.addText(this, cx - 30, cy - 52, "LEVEL " + level.number, {
+    const scale = MB.config.enemyScale(level.number);
+    MB.ui.addText(this, cx - 30, cy - 52,
+      "LEVEL " + level.number + "   ENEMY POWER x" + scale.hp.toFixed(2), {
       fontSize: "8px",
       color: unlocked ? "#ffd24d" : "#66705c",
       origin: 0
@@ -147,6 +149,10 @@ MB.Scenes.Levels = new Phaser.Class({
       color: statusColour,
       origin: 0
     });
+
+    if (completed) {
+      MB.art.drawStars(this, cx + 45, cy + 18, MB.save.getStars(this.state, level.id), 8);
+    }
 
     if (!unlocked) {
       MB.ui.addButton(this, cx + 145, cy + 44, 118, 34, "LOCKED", {

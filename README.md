@@ -4,7 +4,8 @@ A top-down German-learning campaign game built with Phaser 3.
 
 Answer German questions to earn supply. Spend supply on a marching army, send
 it down the road, and fight your way past towers, ballistae, outlaws and
-dinosaurs to the treasure. Clearing a map unlocks the next one.
+dinosaurs to the treasure. Clearing a map unlocks the next one and earns stars
+based on how many of your soldiers survived.
 
 The game ships with four levels:
 
@@ -15,16 +16,24 @@ The game ships with four levels:
 | 3 | The Old Road | Green fields, five defenses |
 | 4 | Amber Pass | Autumn woods, six defenses |
 
+Enemies get stronger on every map: each later level adds **+25% HP**, **+20%
+damage** and faster firing (the map-select cards show the enemy power). Level 1
+uses the base stats, so it is the easiest place to learn the game.
+
 ## How to play
 
 1. Press **ANSWER GERMAN** and answer as many questions as you like. Each
    correct answer earns **1 supply**.
 2. Spend supply on units. The roles are the same in every level; levels reskin
    them:
-   - **Landsknecht / Clubman / Deputy** - 1 supply, 140 HP, 10 DPS. Sturdy.
-   - **Archer / Slinger / Gunslinger** - 3 supply, 70 HP, 34 DPS. Fragile,
-     more damage.
-   - **Musketeer** - 4 supply, 85 HP, 27 DPS. Long range, heavy bullets.
+   - **Landsknecht / Clubman / Deputy** - 1 supply, 140 HP, 27 DPS. Sturdy,
+     rapid-fire minigun.
+   - **Archer / Slinger / Gunslinger** - 3 supply, 70 HP, 34 DPS. Fragile. Drops
+     landmines with a 1,000,000-pixel blast; each blast removes one tenth of an
+     enemy's HP, so ten blasts defeat it.
+   - **Musketeer** - 4 supply, 85 HP, 24 DPS. Fires nuclear missiles with a
+     5,000,000-pixel blast and a big mushroom cloud. Each blast defeats the two
+     closest enemies outright and heavily damages the rest.
    - **Grenadier** - 5 supply, 120 HP, 16 DPS. Slow grenades with a 2000-pixel
      blast that instantly defeats every enemy on the map.
 
@@ -38,7 +47,10 @@ The game ships with four levels:
    in range. Towers fire back; dinosaurs bite soldiers that get close.
 4. Dinosaurs are scared off rather than killed: after a few stone hits they
    turn and run off the map. Towers and ballistae stay destroyed once broken.
-5. Reach the treasure to clear the level and unlock the next map.
+5. Reach the treasure to clear the level and unlock the next map. The treasure
+   is your prize: **★** for a win, **★★** if at least half the army survives,
+   and **★★★** if nobody is lost. Stars are saved, shown on the victory screen
+   and on the map-select card, and can only improve when you replay.
 
 A failed attack is not a dead end: answer more German, rebuild the army, and
 anything already defeated stays out of the way.

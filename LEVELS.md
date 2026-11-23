@@ -193,18 +193,25 @@ If you replace the ground entirely, keep the visual road aligned with the
 
 A unit in `MB.config.UNITS` can define its own weapon:
 
-- `projectile: "stone" | "bullet" | "grenade"` overrides the level's
-  `playerProjectile` for that unit.
+- `projectile: "stone" | "bullet" | "minigun" | "grenade" | "mine" | "nuke"`
+  overrides the level's `playerProjectile` for that unit. `minigun` fires very
+  fast, low-damage bullets; the Clubman uses it.
 - `projectileSpeed` sets the travel speed of its shots.
-- `splash` (used with `projectile: "grenade"`) sets the explosion radius in
-  canvas pixels; every enemy inside it takes the shot's damage. The Grenadier
-  uses 2000, which reaches across the whole 960x540 map. The drawn explosion is
-  capped at 140 px so very large blasts stay readable.
+- `splash` sets the explosion radius in canvas pixels; every enemy inside it
+  takes the shot's damage. The Grenadier uses 2000, the Archer's mine uses
+  1,000,000 and the Musketeer's nuke uses 5,000,000 — all reach across the whole
+  960x540 map. The drawn explosion is capped at 140 px so huge blasts stay
+  readable; nukes get a mushroom cloud, screen shake and a white flash.
 - `instantKill: true` makes a grenade set every enemy inside the blast to 0 HP
   instead of applying the damage value. The Grenadier uses this.
+- `mineBlasts` (used with `projectile: "mine"`) is the number of blasts needed
+  to defeat an enemy. Each mine blast deals `ceil(enemy.maxHp / mineBlasts)`,
+  so the Archer's 10 blasts kill any enemy regardless of size.
 
-Musketeers fire bullets and Grenadiers lob grenades in every level. Other
-units keep the level's `playerProjectile` style.
+Nukes defeat the two closest enemies in the blast outright (see
+`MB.config.NUKES.KILLS`) and damage the rest. Clubmen fire rapid minigun
+bullets, Archers drop landmines and Grenadiers lob grenades in every level.
+Other units keep the level's `playerProjectile` style.
 
 ## Power meter
 
@@ -213,6 +220,27 @@ top bar. Each unit's `PER_HIT` value lives in `MB.config.POWER` along with
 `MAX`, `DAMAGE` and `BLAST_RADIUS`. At 100% the army automatically unleashes a
 POWER BARRAGE: explosions on every remaining defense, staggered by 90 ms. The
 meter resets on a new attack and when rebuilding the army.
+
+## Treasure stars
+
+Taking the treasure in any level awards a star prize stored per level in
+localStorage. `MB.Scenes.Level.calculateStars()` returns 1 star for a win, 2 if
+at least `MB.config.STARS.TWO_STAR_RATIO` (0.5) of the trained army survives, and
+3 if every soldier survives. `MB.save.completeLevel(id, stars)` keeps the best
+result across replays. The victory overlay draws the stars with
+`MB.art.drawStars()`, and cleared cards in `MB.Scenes.Levels` show the saved
+stars next to the CLEARED status. No level data changes are needed — the prize
+works automatically for every level, including new ones.
+
+## Enemy scaling
+
+Enemies automatically get stronger on later maps, so level data only needs base
+stats. `MB.config.enemyScale(levelNumber)` returns multipliers for `hp`,
+`damage` and `fireRate`. Level 1 is always 1.0; each level number after that
+adds `ENEMY_SCALING.HP`, `ENEMY_SCALING.DAMAGE` and `ENEMY_SCALING.FIRE_RATE`
+from `js/config.js`. `buildDefenses()` applies them to both structures and
+dinosaurs after any per-spot overrides. The map-select card shows the resulting
+HP multiplier as "ENEMY POWER".
 
 ## Balance
 

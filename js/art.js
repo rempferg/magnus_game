@@ -839,6 +839,71 @@ MB.art = (function () {
     return container;
   }
 
+  function drawMine(scene, x, y) {
+    const container = scene.add.container(x, y);
+    const g = scene.add.graphics();
+    // Spikes around a flat disc, with a red arming light in the middle.
+    g.fillStyle(0x33382f, 1);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      g.fillCircle(Math.cos(a) * 6.5, Math.sin(a) * 6.5, 2.4);
+    }
+    g.fillStyle(0x4c5347, 1);
+    g.fillCircle(0, 0, 6.5);
+    g.lineStyle(1.5, 0x22261f, 1);
+    g.strokeCircle(0, 0, 6.5);
+    g.fillStyle(0x2a2e27, 1);
+    g.fillCircle(-1.4, -1.4, 2.6);
+    g.fillStyle(0xff5a4a, 1);
+    g.fillCircle(1.6, 1, 2);
+    container.add(g);
+    return container;
+  }
+
+  function drawNuke(scene, x, y) {
+    const container = scene.add.container(x, y);
+    const g = scene.add.graphics();
+    // A small missile with fins and a flame, pointing along +x.
+    g.fillStyle(0xff9a3c, 0.9);
+    g.fillTriangle(-10, -2, -18, 0, -10, 2);
+    g.fillStyle(0xffe27a, 1);
+    g.fillTriangle(-10, -1, -14, 0, -10, 1);
+    g.fillStyle(0x8f9a8c, 1);
+    g.fillTriangle(-10, -2.5, -6, -7, -4, -2.5);
+    g.fillTriangle(-10, 2.5, -6, 7, -4, 2.5);
+    g.fillStyle(0xd8dcd0, 1);
+    g.fillRect(-10, -2.5, 16, 5);
+    g.fillStyle(0x9aa39a, 1);
+    g.fillRect(-10, -2.5, 4, 5);
+    g.fillStyle(0xf2f4e8, 1);
+    g.fillTriangle(6, -2.5, 11, 0, 6, 2.5);
+    container.add(g);
+    return container;
+  }
+
+  function drawNuclearBlast(scene, x, y) {
+    const container = scene.add.container(x, y);
+    const g = scene.add.graphics();
+    g.fillStyle(0xffe06a, 0.7);
+    g.fillCircle(0, 0, 52);
+    g.fillStyle(0xfffbe0, 0.95);
+    g.fillCircle(0, 0, 32);
+    // Rising stem and billowing cap.
+    g.fillStyle(0xb9b0a0, 0.85);
+    g.fillEllipse(0, 20, 22, 58);
+    g.fillStyle(0xd8cfbd, 0.92);
+    g.fillCircle(-24, -12, 24);
+    g.fillCircle(24, -12, 24);
+    g.fillCircle(0, -22, 30);
+    g.fillStyle(0xfff2cf, 0.9);
+    g.fillCircle(-10, -27, 14);
+    g.fillCircle(12, -24, 12);
+    g.lineStyle(3, 0xfff4c2, 0.8);
+    g.strokeCircle(0, 0, 66);
+    container.add(g);
+    return container;
+  }
+
   function drawExplosion(scene, x, y, radius) {
     const r = radius || 48;
     const container = scene.add.container(x, y);
@@ -858,6 +923,36 @@ MB.art = (function () {
     return container;
   }
 
+  function starPoints(cx, cy, outer, inner, points) {
+    const result = [];
+    for (let i = 0; i < points * 2; i++) {
+      const r = i % 2 === 0 ? outer : inner;
+      const a = -Math.PI / 2 + (i * Math.PI) / points;
+      result.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
+    }
+    return result;
+  }
+
+  // A row of three stars. The first `count` are lit; the rest are dim placeholders.
+  function drawStars(scene, x, y, count, size) {
+    size = size || 10;
+    const max = (MB.config.STARS && MB.config.STARS.MAX) || 3;
+    const gap = size * 2.3;
+    const container = scene.add.container(x, y);
+    for (let i = 0; i < max; i++) {
+      const g = scene.add.graphics();
+      const pts = starPoints(0, 0, size, size * 0.45, 5);
+      const filled = i < count;
+      g.fillStyle(filled ? 0xffd24d : 0x2c3428, filled ? 1 : 0.9);
+      g.fillPoints(pts, true);
+      g.lineStyle(1.5, filled ? 0xfff0b0 : 0x59654f, 1);
+      g.strokePoints(pts, true);
+      g.setPosition((i - (max - 1) / 2) * gap, 0);
+      container.add(g);
+    }
+    return container;
+  }
+
   return {
     drawMap: drawMap,
     drawMiniMap: drawMiniMap,
@@ -868,7 +963,11 @@ MB.art = (function () {
     drawStone: drawStone,
     drawBullet: drawBullet,
     drawGrenade: drawGrenade,
+    drawMine: drawMine,
+    drawNuke: drawNuke,
+    drawNuclearBlast: drawNuclearBlast,
     drawExplosion: drawExplosion,
+    drawStars: drawStars,
     rng: rng
   };
 })();
