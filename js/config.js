@@ -11,7 +11,7 @@ MB.config = (function () {
   // Appended to asset URLs by the Dockerfile. Bump it whenever js/, style.css
   // or fonts/ change, because those files are served with a one-year immutable
   // cache while index.html itself is never cached.
-  const VERSION = "V7";
+  const VERSION = "V8";
 
   // Supply is earned by answering German questions. Units spend it, so a unit
   // that costs 3 needs three correct answers before it can be trained.
@@ -45,10 +45,42 @@ MB.config = (function () {
       color: 0x75c46f,
       accent: 0xe6ffd9,
       desc: "Fragile, high damage."
+    },
+    musketeer: {
+      id: "musketeer",
+      name: "Musketeer",
+      cost: 4,
+      hp: 85,
+      damage: 40,
+      fireRate: 1500,
+      range: 260,
+      speed: 60,
+      size: 9,
+      color: 0xb98ad9,
+      accent: 0xf2dcff,
+      projectile: "bullet",
+      desc: "Long-range, heavy shot."
+    },
+    grenadier: {
+      id: "grenadier",
+      name: "Grenadier",
+      cost: 5,
+      hp: 120,
+      damage: 36,
+      fireRate: 2200,
+      range: 175,
+      speed: 52,
+      size: 11,
+      color: 0xd98a4b,
+      accent: 0xffe2b0,
+      projectile: "grenade",
+      projectileSpeed: 250,
+      splash: 2000,
+      desc: "Huge blast that hits every enemy on the map."
     }
   };
 
-  const UNIT_ORDER = ["landsknecht", "archer"];
+  const UNIT_ORDER = ["landsknecht", "archer", "musketeer", "grenadier"];
 
   const DEFENSES = {
     tower: {

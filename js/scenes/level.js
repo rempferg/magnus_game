@@ -141,6 +141,9 @@ MB.Scenes.Level = new Phaser.Class({
 
   buildHud: function () {
     const C = MB.config;
+    const total = C.UNIT_ORDER.reduce(function (sum, id) {
+      return sum + this.army[id];
+    }.bind(this), 0);
     if (this.hud) {
       this.hud.destroy(true);
       this.hud = null;
@@ -170,6 +173,10 @@ MB.Scenes.Level = new Phaser.Class({
     hud.add(MB.ui.addText(this, 480, 29, this.level.brief, {
       fontSize: "7px",
       color: "#c2d3b4"
+    }));
+    hud.add(MB.ui.addText(this, 742, 21, "ARMY " + total, {
+      fontSize: "9px",
+      color: "#cfe0c0"
     }));
     hud.add(MB.ui.addText(this, 894, 21, "SUPPLY " + this.supply, {
       fontSize: "9px",
@@ -202,12 +209,12 @@ MB.Scenes.Level = new Phaser.Class({
       origin: 0
     }));
 
-    const cardX = [100, 260];
+    const cardX = [86, 236, 386, 536];
     MB.config.UNIT_ORDER.forEach(function (kind, i) {
       const def = C.UNITS[kind];
       const affordable = this.supply >= def.cost;
       const dps = Math.round(def.damage / def.fireRate * 1000);
-      hud.add(MB.ui.addButton(this, cardX[i], 490, 152, 52,
+      hud.add(MB.ui.addButton(this, cardX[i], 490, 140, 52,
         this.unitName(kind).toUpperCase() + "\n" +
         def.cost + " SUPPLY · " + def.hp + " HP\n" +
         dps + " DPS · " + this.army[kind] + " READY", {
@@ -222,7 +229,7 @@ MB.Scenes.Level = new Phaser.Class({
         }));
     }, this);
 
-    hud.add(MB.ui.addButton(this, 445, 490, 182, 52, "ANSWER GERMAN\n+1 SUPPLY", {
+    hud.add(MB.ui.addButton(this, 690, 490, 150, 52, "ANSWER GERMAN\n+1 SUPPLY", {
       fill: 0x2a5ab0,
       fillOver: 0x3f7de0,
       fontSize: "8px",
@@ -232,23 +239,13 @@ MB.Scenes.Level = new Phaser.Class({
       }.bind(this)
     }));
 
-    const total = MB.config.UNIT_ORDER.reduce(function (sum, id) {
-      return sum + this.army[id];
-    }.bind(this), 0);
-
     const soldierWord = total === 1 ? "SOLDIER" : "SOLDIERS";
-    hud.add(MB.ui.addText(this, 610, 490, "ARMY\n" + total + " " + soldierWord, {
-      fontSize: "8px",
-      color: "#cfe0c0",
-      lineSpacing: 8
-    }));
-
     const canAttack = total > 0;
-    hud.add(MB.ui.addButton(this, 800, 490, 250, 54,
+    hud.add(MB.ui.addButton(this, 860, 490, 180, 54,
       canAttack ? "ATTACK!\n" + total + " " + soldierWord : "ATTACK\nTRAIN FIRST", {
         fill: canAttack ? 0xa33a32 : 0x3a3f36,
         fillOver: canAttack ? 0xcf4c41 : 0x3a3f36,
-        fontSize: canAttack ? "13px" : "9px",
+        fontSize: canAttack ? "11px" : "9px",
         lineSpacing: 5,
         textColor: canAttack ? "#ffffff" : "#84918a",
         onClick: function () {
@@ -391,6 +388,9 @@ MB.Scenes.Level = new Phaser.Class({
           damage: def.damage,
           range: def.range,
           speed: def.speed,
+          projectile: def.projectile || null,
+          projectileSpeed: def.projectileSpeed || 0,
+          splash: def.splash || 0,
           cooldown: Math.random() * def.fireRate,
           cooldownMax: def.fireRate,
           progress: 0,
@@ -598,11 +598,18 @@ MB.Scenes.Level = new Phaser.Class({
 
   fireProjectile: function (source, target, side) {
     const isPlayer = side === "player";
-    const stone = isPlayer && this.level.playerProjectile === "stone";
-    const bullet = (isPlayer && this.level.playerProjectile === "bullet") ||
+    // Individual units can carry their own weapon; otherwise fall back to the
+    // level's projectile style (stones in Stone Age, bullets in High Noon).
+    const weapon = isPlayer ? source.projectile : null;
+    const grenade = weapon === "grenade";
+    const stone = isPlayer && (weapon || this.level.playerProjectile) === "stone";
+    const bullet = weapon === "bullet" ||
+      (isPlayer && !weapon && this.level.playerProjectile === "bullet") ||
       (!isPlayer && this.level.enemyProjectile === "bullet");
     let g;
-    if (stone) {
+    if (grenade) {
+      g = MB.art.drawGrenade(this, source.x, source.y).setDepth(20);
+    } else if (stone) {
       g = MB.art.drawStone(this, source.x, source.y).setDepth(20);
     } else if (bullet) {
       g = MB.art.drawBullet(
@@ -631,12 +638,25 @@ MB.Scenes.Level = new Phaser.Class({
       side: side,
       stone: stone,
       bullet: bullet,
-      spin: stone ? (Math.random() < 0.5 ? -1 : 1) * (4 + Math.random() * 3) : 0,
-      speed: isPlayer ? 520 : (source.projectileSpeed || 320)
+      grenade: grenade,
+      splash: grenade ? (source.splash || 48) : 0,
+      spin: (stone || grenade)
+        ? (Math.random() < 0.5 ? -1 : 1) * (4 + Math.random() * 3)
+        : 0,
+      arc: grenade ? 22 : 0,
+      launchDist: Math.max(1, Math.sqrt(
+        (target.x - source.x) * (target.x - source.x) +
+        (target.y - source.y) * (target.y - source.y)
+      )),
+      speed: isPlayer
+        ? (source.projectileSpeed || (grenade ? 250 : 520))
+        : (source.projectileSpeed || 320)
     });
 
     this.shotCount++;
-    if (this.shotCount % 4 === 1) {
+    if (grenade) {
+      MB.audio.torpedoLaunch();
+    } else if (this.shotCount % 4 === 1) {
       if (isPlayer) MB.audio.laser();
       else MB.audio.alienShot();
     }
@@ -660,12 +680,21 @@ MB.Scenes.Level = new Phaser.Class({
 
       if (dist <= step + 4) {
         p.g.destroy();
-        this.spawnHit(target.x, target.y, p.side, p.stone);
-        this.hit(target, p.damage, p.side);
+        if (p.splash > 0) {
+          this.explode(target.x, target.y, p.splash, p.damage, p.side, p.stone);
+        } else {
+          this.spawnHit(target.x, target.y, p.side, p.stone);
+          this.hit(target, p.damage, p.side);
+        }
       } else {
         p.x += (dx / dist) * step;
         p.y += (dy / dist) * step;
-        p.g.setPosition(p.x, p.y);
+        if (p.arc) {
+          const t = 1 - Math.min(1, dist / p.launchDist);
+          p.g.setPosition(p.x, p.y - Math.sin(Math.PI * t) * p.arc);
+        } else {
+          p.g.setPosition(p.x, p.y);
+        }
         if (p.spin) p.g.rotation += p.spin * dtSec;
         if (p.bullet) p.g.setRotation(Math.atan2(dy, dx));
         survivors.push(p);
@@ -673,6 +702,31 @@ MB.Scenes.Level = new Phaser.Class({
     }
 
     this.projectiles = survivors;
+  },
+
+  explode: function (x, y, radius, damage, side, stone) {
+    // Keep huge blast radii readable on a 960x540 canvas: damage uses the full
+    // radius, but the drawn effect is capped.
+    const visual = MB.art.drawExplosion(this, x, y, Math.min(radius, 140)).setDepth(28);
+    this.tweens.add({
+      targets: visual,
+      scaleX: 1.3,
+      scaleY: 1.3,
+      alpha: 0,
+      duration: 280,
+      onComplete: function () { visual.destroy(); }
+    });
+    this.spawnHit(x, y, side, stone);
+    MB.audio.explode();
+
+    const r2 = radius * radius;
+    for (let i = 0; i < this.defenses.length; i++) {
+      const d = this.defenses[i];
+      if (d.dead || d.hp <= 0) continue;
+      const dx = d.x - x;
+      const dy = d.y - y;
+      if (dx * dx + dy * dy <= r2) this.hit(d, damage, side);
+    }
   },
 
   hit: function (target, damage, side) {

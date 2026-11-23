@@ -547,6 +547,20 @@ MB.art = (function () {
       g.strokePath();
       g.fillStyle(0x8c8c82, 1);
       g.fillCircle(size * 1.15, 0, size * 0.24);
+    } else if (kind === "musketeer") {
+      g.lineStyle(4, 0x6b4a2c, 1);
+      g.lineBetween(size * 0.35, 0, size + 18, 0);
+      g.fillStyle(0xd8c8a8, 1);
+      g.fillTriangle(size + 18, 0, size + 10, -2, size + 10, 2);
+      g.fillStyle(0xffe6a8, 1);
+      g.fillCircle(size * 0.8, -size * 0.22, 2);
+    } else if (kind === "grenadier") {
+      g.fillStyle(0x4a4a45, 1);
+      g.fillCircle(size + 9, 0, size * 0.45);
+      g.lineStyle(1.5, 0xd8c8a8, 1);
+      g.lineBetween(size + 9, -size * 0.35, size + 6, -size * 0.9);
+      g.fillStyle(0xffb36b, 1);
+      g.fillCircle(size + 6, -size * 0.9, 2);
     } else {
       g.lineStyle(4, 0x5a3f2a, 1);
       g.lineBetween(size * 0.4, 0, size + 10, 0);
@@ -597,10 +611,24 @@ MB.art = (function () {
       g.lineBetween(-size * 0.65, -size * 0.25, size * 0.35, size * 0.35);
     }
 
-    g.lineStyle(3, 0x2a1a10, 1);
-    g.lineBetween(size * 0.45, 0, size + 12, 0);
-    g.fillStyle(0xd9c8a8, 1);
-    g.fillCircle(size + 12, 0, 2);
+    if (kind === "grenadier") {
+      g.fillStyle(0xb03024, 1);
+      g.fillRect(size * 0.5, -size * 0.45, size * 0.7, size * 0.9);
+      g.lineStyle(1.5, 0xd9c8a8, 1);
+      g.lineBetween(size + 8, -size * 0.3, size + 13, -size * 0.75);
+      g.fillStyle(0xffd24d, 1);
+      g.fillCircle(size + 13, -size * 0.75, 2);
+    } else {
+      const barrel = kind === "musketeer" ? size + 22 : size + 12;
+      g.lineStyle(3, 0x2a1a10, 1);
+      g.lineBetween(size * 0.45, 0, barrel, 0);
+      g.fillStyle(0xd9c8a8, 1);
+      g.fillCircle(barrel, 0, 2);
+      if (kind === "musketeer") {
+        g.fillStyle(0x6b4a2c, 1);
+        g.fillRect(size * 0.35, -2.5, size * 0.9, 5);
+      }
+    }
 
     container.add(g);
     return container;
@@ -637,6 +665,22 @@ MB.art = (function () {
       g.lineBetween(size * 0.3, 0, size + 9, 0);
       g.fillStyle(0xffe6a8, 1);
       g.fillTriangle(size + 9, 0, size + 3, -3, size + 3, 3);
+    } else if (kind === "musketeer") {
+      g.fillStyle(0x2a1a10, 1);
+      g.fillRect(size * 0.4, -3, size * 1.4, 6);
+      g.fillStyle(0x9a9a92, 1);
+      g.fillRect(size + 4, -1.5, size * 0.8, 3);
+      g.fillStyle(0xffd24d, 1);
+      g.fillRect(size * 0.35, -size * 0.5, 3, size);
+    } else if (kind === "grenadier") {
+      g.fillStyle(0x3a2a1a, 1);
+      g.fillRect(size * 0.5, -size * 0.7, size * 0.7, size * 1.4);
+      g.fillStyle(0x4a4a45, 1);
+      g.fillCircle(size + 8, 0, size * 0.42);
+      g.lineStyle(1.5, accent, 1);
+      g.lineBetween(size + 8, -size * 0.35, size + 5, -size * 0.85);
+      g.fillStyle(0xffb36b, 1);
+      g.fillCircle(size + 5, -size * 0.85, 2);
     } else {
       g.fillStyle(accent, 1);
       g.fillRect(size * 0.55, -size * 0.8, 5, size * 1.6);
@@ -778,6 +822,42 @@ MB.art = (function () {
     return container;
   }
 
+  function drawGrenade(scene, x, y) {
+    const container = scene.add.container(x, y);
+    const g = scene.add.graphics();
+    g.fillStyle(0x3a3a36, 1);
+    g.fillCircle(0, 0, 4.5);
+    g.lineStyle(1, 0x1c1c1a, 1);
+    g.strokeCircle(0, 0, 4.5);
+    g.fillStyle(0x8c8c82, 0.8);
+    g.fillCircle(-1.4, -1.4, 1.3);
+    g.lineStyle(1.4, 0xd8c8a8, 1);
+    g.lineBetween(2, -3.5, 4, -7);
+    g.fillStyle(0xffd24d, 1);
+    g.fillCircle(4, -7, 1.6);
+    container.add(g);
+    return container;
+  }
+
+  function drawExplosion(scene, x, y, radius) {
+    const r = radius || 48;
+    const container = scene.add.container(x, y);
+    const g = scene.add.graphics();
+    g.fillStyle(0xff7a2f, 0.45);
+    g.fillCircle(0, 0, r * 0.55);
+    g.fillStyle(0xffd24d, 0.7);
+    g.fillCircle(0, 0, r * 0.36);
+    g.fillStyle(0xfff4c2, 1);
+    g.fillCircle(0, 0, r * 0.18);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      g.fillStyle(i % 2 ? 0xffd24d : 0xff7a2f, 0.9);
+      g.fillCircle(Math.cos(a) * r * 0.5, Math.sin(a) * r * 0.5, r * 0.1);
+    }
+    container.add(g);
+    return container;
+  }
+
   return {
     drawMap: drawMap,
     drawMiniMap: drawMiniMap,
@@ -787,6 +867,8 @@ MB.art = (function () {
     drawUnit: drawUnit,
     drawStone: drawStone,
     drawBullet: drawBullet,
+    drawGrenade: drawGrenade,
+    drawExplosion: drawExplosion,
     rng: rng
   };
 })();

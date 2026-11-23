@@ -24,6 +24,9 @@ The game ships with four levels:
    - **Landsknecht / Clubman / Deputy** - 1 supply, 140 HP, 10 DPS. Sturdy.
    - **Archer / Slinger / Gunslinger** - 3 supply, 70 HP, 34 DPS. Fragile,
      more damage.
+   - **Musketeer** - 4 supply, 85 HP, 27 DPS. Long range, heavy bullets.
+   - **Grenadier** - 5 supply, 120 HP, 16 DPS. Slow grenades with a 2000-pixel
+     blast that reaches every enemy on the map.
 
    Each purchase appears in your camp immediately. Press **ATTACK** to send
    the whole army down the road.
@@ -108,7 +111,10 @@ Enemy entries in `defenses` can be structures (`tower`, `ballista`), bandits
 (`bandit`) or dinos (`raptor`, `stego`, `trex`). Dinos walk toward nearby
 soldiers to bite them and flee after `fleeAfter` stone hits. A level can set
 `unitStyle` to `"stoneage"` or `"western"` to reskin soldiers, and
-`playerProjectile` / `enemyProjectile` to `"stone"` or `"bullet"`.
+`playerProjectile` / `enemyProjectile` to `"stone"` or `"bullet"`. Individual
+units can override the level's projectile with their own `projectile` in
+`js/config.js`; Musketeers always fire bullets and Grenadiers lob grenades with
+splash damage.
 
 See [LEVELS.md](LEVELS.md) for the full schema and a minimal example.
 

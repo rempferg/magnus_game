@@ -189,12 +189,29 @@ The art layer is deliberately separate:
 If you replace the ground entirely, keep the visual road aligned with the
 `path` data; units fight along the path, not along painted pixels.
 
+## Unit weapons
+
+A unit in `MB.config.UNITS` can define its own weapon:
+
+- `projectile: "stone" | "bullet" | "grenade"` overrides the level's
+  `playerProjectile` for that unit.
+- `projectileSpeed` sets the travel speed of its shots.
+- `splash` (used with `projectile: "grenade"`) sets the explosion radius in
+  canvas pixels; every enemy inside it takes the shot's damage. The Grenadier
+  uses 2000, which reaches across the whole 960x540 map. The drawn explosion is
+  capped at 140 px so very large blasts stay readable.
+
+Musketeers fire bullets and Grenadiers lob grenades in every level. Other
+units keep the level's `playerProjectile` style.
+
 ## Balance
 
 Unit and enemy stats are in `js/config.js`:
 
 - `MB.config.UNITS.landsknecht`
 - `MB.config.UNITS.archer`
+- `MB.config.UNITS.musketeer`
+- `MB.config.UNITS.grenadier`
 - `MB.config.DEFENSES.tower`
 - `MB.config.DEFENSES.ballista`
 - `MB.config.DEFENSES.bandit`
