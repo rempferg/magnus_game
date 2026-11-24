@@ -540,7 +540,16 @@ MB.art = (function () {
     g.fillStyle(0x1a1a1a, 1);
     g.fillCircle(size * 0.55, -size * 0.1, Math.max(1, size * 0.1));
 
-    if (kind === "archer") {
+    if (kind === "landsknecht") {
+      g.fillStyle(0x6b4a2c, 1);
+      g.fillRect(size * 0.2, -3, size * 0.9, 6);
+      g.fillStyle(0x4a4a45, 1);
+      g.fillRect(size + 5, -size * 0.5, size * 0.9, size);
+      g.lineStyle(2, 0x8c8c82, 1);
+      g.lineBetween(size * 0.4, 0, size + 16, 0);
+      g.fillStyle(0xd8c8a8, 1);
+      g.fillCircle(size + 17, 0, 2.2);
+    } else if (kind === "archer") {
       g.lineStyle(2, 0xd8c8a8, 1);
       g.beginPath();
       g.arc(size * 0.72, 0, size * 0.62, -1.15, 1.15, false);
@@ -620,7 +629,16 @@ MB.art = (function () {
       g.lineBetween(-size * 0.65, -size * 0.25, size * 0.35, size * 0.35);
     }
 
-    if (kind === "grenadier") {
+    if (kind === "landsknecht") {
+      g.fillStyle(0x8a5a2a, 1);
+      g.fillRect(size * 0.35, -3, size * 0.9, 6);
+      g.fillStyle(0x3a3a36, 1);
+      g.fillRect(size + 5, -size * 0.45, size * 0.9, size * 0.9);
+      g.lineStyle(2, 0xd9c8a8, 1);
+      g.lineBetween(size * 0.45, 0, size + 16, 0);
+      g.fillStyle(0xd9c8a8, 1);
+      g.fillCircle(size + 17, 0, 2.2);
+    } else if (kind === "grenadier") {
       g.fillStyle(0xb03024, 1);
       g.fillRect(size * 0.5, -size * 0.45, size * 0.7, size * 0.9);
       g.lineStyle(1.5, 0xd9c8a8, 1);
@@ -672,7 +690,16 @@ MB.art = (function () {
     g.fillStyle(accent, 1);
     g.fillCircle(-1, -1, size * 0.45);
 
-    if (kind === "archer") {
+    if (kind === "landsknecht") {
+      g.fillStyle(0x2a1a10, 1);
+      g.fillRect(size * 0.35, -3.5, size, 7);
+      g.fillStyle(0x3a3a36, 1);
+      g.fillRect(size + 6, -size * 0.5, size, size);
+      g.lineStyle(2, 0xd8c8a8, 1);
+      g.lineBetween(size * 0.4, 0, size + 17, 0);
+      g.fillStyle(0xd8c8a8, 1);
+      g.fillCircle(size + 18, 0, 2.2);
+    } else if (kind === "archer") {
       g.lineStyle(2, 0x3a2a18, 1);
       g.beginPath();
       g.arc(size * 0.65, 0, size * 0.9, -1.25, 1.25, false);

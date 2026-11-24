@@ -26,8 +26,8 @@ uses the base stats, so it is the easiest place to learn the game.
    correct answer earns **1 supply**.
 2. Spend supply on units. The roles are the same in every level; levels reskin
    them:
-   - **Landsknecht / Clubman / Deputy** - 1 supply, 140 HP, 14 DPS. Sturdy,
-     rapid-fire minigun.
+   - **Landsknecht / Clubman / Deputy** - 1 supply, 140 HP, 14 DPS. Sturdy, with
+     a rapid-fire machine gun in every level.
    - **Archer / Gunslinger** - 3 supply, 70 HP, 34 DPS. Fragile. Drops landmines
      with a 400-pixel blast; each blast removes one tenth of an enemy's HP, so
      ten blasts defeat it.

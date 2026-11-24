@@ -194,9 +194,9 @@ If you replace the ground entirely, keep the visual road aligned with the
 A unit in `MB.config.UNITS` can define its own weapon:
 
 - `projectile: "stone" | "bullet" | "minigun" | "grenade" | "mine" | "flame" |
-  "nuke"` overrides the level's `playerProjectile` for that unit. `minigun` fires
-  very fast, low-damage bullets; the Clubman uses it. `flame` fires short-range
-  flame jets with a small `splash`.
+  "nuke"` overrides the level's `playerProjectile` for that unit. `minigun` is
+  the Clubman's machine gun: very fast, low-damage bullets in every level.
+  `flame` fires short-range flame jets with a small `splash`.
 - `projectileSpeed` sets the travel speed of its shots.
 - `splash` sets the explosion radius in canvas pixels; every enemy inside it
   takes the shot's damage. The Grenadier uses 600, the Archer's mine uses 400,
@@ -215,9 +215,9 @@ Stone Age level uses this to turn the Archer reskin (the Slinger) into a
 flamethrower while other levels keep its landmine.
 
 Nukes defeat the two closest enemies in the blast outright (see
-`MB.config.NUKES.KILLS`) and damage the rest. Clubmen fire rapid minigun
-bullets, Archers drop landmines, Grenadiers lob grenades, and the Flamethrower
-soldier plus the Stone Age Slinger breathe fire. Other units keep the level's
+`MB.config.NUKES.KILLS`) and damage the rest. Clubmen fire a rapid machine gun,
+Archers drop landmines, Grenadiers lob grenades, and the Flamethrower soldier
+plus the Stone Age Slinger breathe fire. Other units keep the level's
 `playerProjectile` style.
 
 Only the player's new weapons were weakened: the minigun now deals 2 damage per
