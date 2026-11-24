@@ -11,6 +11,6 @@ COPY deployment/nginx.container.conf /etc/nginx/conf.d/default.conf
 # new asset URLs on every deploy.
 RUN V="$(grep -oE 'V[0-9]+' /usr/share/nginx/html/js/config.js | head -n1)" && \
     V="${V#V}" && \
-    sed -i "s|href=\"style.css\"|href=\"style.css?v=${V}\"|g; s|src=\"\(js/[^\"]*\)\"|src=\"\1?v=${V}\"|g" /usr/share/nginx/html/index.html
+    sed -i "s|?v=[0-9]*||g; s|href=\"style.css\"|href=\"style.css?v=${V}\"|g; s|src=\"\(js/[^\"]*\)\"|src=\"\1?v=${V}\"|g" /usr/share/nginx/html/index.html
 
 EXPOSE 80

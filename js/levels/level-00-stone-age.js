@@ -17,8 +17,8 @@ MB.Levels.define({
     archer: {
       projectile: "flame",
       projectileSpeed: 420,
-      damage: 4,
-      fireRate: 140,
+      damage: 5,
+      fireRate: 400,
       range: 145,
       splash: 30,
       desc: "Short-range flamethrower that burns clustered dinos."
