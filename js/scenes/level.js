@@ -229,18 +229,27 @@ MB.Scenes.Level = new Phaser.Class({
       origin: 0
     }));
 
-    const cardX = [70, 188, 306, 424, 542];
-    MB.config.UNIT_ORDER.forEach(function (kind, i) {
+    const kinds = MB.config.UNIT_ORDER;
+    const gap = 6;
+    const left = 12;
+    const right = 602;
+    const cardW = (right - left - gap * (kinds.length - 1)) / kinds.length;
+    const compact = kinds.length > 5;
+    kinds.forEach(function (kind, i) {
       const def = this.unitDef(kind);
-      const affordable = this.supply >= def.cost;
+      const unlocked = this.isUnitUnlocked(kind);
+      const affordable = unlocked && this.supply >= def.cost;
       const dps = Math.round(def.damage / def.fireRate * 1000);
-      hud.add(MB.ui.addButton(this, cardX[i], 490, 116, 52,
-        this.unitName(kind).toUpperCase() + "\n" +
-        def.cost + " SUP · " + def.hp + " HP\n" +
-        dps + " DPS · " + this.army[kind] + " RDY", {
+      const label = unlocked
+        ? this.unitName(kind).toUpperCase() + "\n" +
+          def.cost + (compact ? "S" : " SUP") + " · " + def.hp + " HP\n" +
+          dps + " DPS · " + this.army[kind] + (compact ? "" : " RDY")
+        : "LOCKED\nTAKE TREASURE\nTO UNLOCK";
+      hud.add(MB.ui.addButton(
+        this, left + cardW / 2 + i * (cardW + gap), 490, cardW, 52, label, {
           fill: affordable ? 0x2a5a8f : 0x333d3a,
           fillOver: affordable ? 0x3b74b3 : 0x333d3a,
-          fontSize: "7px",
+          fontSize: compact ? "6px" : "7px",
           lineSpacing: 3,
           textColor: affordable ? "#ffffff" : "#84918a",
           onClick: function () {
@@ -349,8 +358,17 @@ MB.Scenes.Level = new Phaser.Class({
     return def;
   },
 
+  isUnitUnlocked: function (kind) {
+    return MB.save.isUnlocked(MB.save.load(), kind);
+  },
+
   trainUnit: function (kind) {
     if (this.phase !== "prepare" || this.finished) return;
+    if (!this.isUnitUnlocked(kind)) {
+      MB.audio.wrong();
+      this.toast("Locked - take the treasure first!", "#ffb08a");
+      return;
+    }
     const def = this.unitDef(kind);
     if (!def) return;
     if (this.supply < def.cost) {
@@ -700,7 +718,8 @@ MB.Scenes.Level = new Phaser.Class({
     const nuke = weapon === "nuke";
     const minigun = weapon === "minigun";
     const flame = weapon === "flame";
-    const explosive = grenade || mine || nuke || flame;
+    const rocket = weapon === "rocket";
+    const explosive = grenade || mine || nuke || flame || rocket;
     const stone = isPlayer && (weapon || this.level.playerProjectile) === "stone";
     const bullet = weapon === "bullet" || minigun ||
       (isPlayer && !weapon && this.level.playerProjectile === "bullet") ||
@@ -715,6 +734,9 @@ MB.Scenes.Level = new Phaser.Class({
       g.setRotation(Math.atan2(target.y - source.y, target.x - source.x));
     } else if (nuke) {
       g = MB.art.drawNuke(this, source.x, source.y).setDepth(20);
+      g.setRotation(Math.atan2(target.y - source.y, target.x - source.x));
+    } else if (rocket) {
+      g = MB.art.drawRocket(this, source.x, source.y).setDepth(20);
       g.setRotation(Math.atan2(target.y - source.y, target.x - source.x));
     } else if (stone) {
       g = MB.art.drawStone(this, source.x, source.y).setDepth(20);
@@ -739,6 +761,7 @@ MB.Scenes.Level = new Phaser.Class({
     let effect = null;
     if (mine) effect = { kind: "mine", blasts: source.mineBlasts || MB.config.MINES.BLASTS_TO_KILL };
     if (flame) effect = { kind: "flame" };
+    if (rocket) effect = { kind: "rocket" };
     if (nuke) effect = { kind: "nuke", kills: MB.config.NUKES.KILLS };
 
     this.projectiles.push({
@@ -830,6 +853,7 @@ MB.Scenes.Level = new Phaser.Class({
   explode: function (x, y, radius, damage, side, stone, silent, power, instant, effect) {
     const isNuke = !!(effect && effect.kind === "nuke");
     const isFlame = !!(effect && effect.kind === "flame");
+    const isRocket = !!(effect && effect.kind === "rocket");
     let visual;
     if (isNuke) {
       visual = MB.art.drawNuclearBlast(this, x, y).setDepth(28);
@@ -845,6 +869,8 @@ MB.Scenes.Level = new Phaser.Class({
       MB.audio.powerBoom();
     } else if (isFlame) {
       visual = MB.art.drawFlameBurst(this, x, y).setDepth(28);
+    } else if (isRocket) {
+      visual = MB.art.drawRocketBlast(this, x, y).setDepth(28);
     } else {
       // Keep huge blast radii readable on a 960x540 canvas: damage uses the
       // full radius, but the drawn effect is capped.
@@ -1144,9 +1170,13 @@ MB.Scenes.Level = new Phaser.Class({
     this.finished = true;
     if (this.hud) this.hud.setVisible(false);
 
+    this.justUnlocked = null;
     if (victory) {
+      const reward = MB.config.TREASURE_UNLOCK;
+      const before = MB.save.load();
       this.levelStars = this.calculateStars();
       MB.save.completeLevel(this.level.id, this.levelStars);
+      if (reward && !MB.save.isUnlocked(before, reward)) this.justUnlocked = reward;
       MB.audio.victory();
     } else {
       MB.audio.defeat();
@@ -1228,6 +1258,18 @@ MB.Scenes.Level = new Phaser.Class({
       color: "#aabb9a"
     });
 
+    let unlockNote = null;
+    if (victory && this.justUnlocked) {
+      const name = this.unitName(this.justUnlocked).toUpperCase();
+      unlockNote = MB.ui.addText(this, C.WIDTH / 2, 352,
+        "NEW SOLDIER UNLOCKED: " + name + "!", {
+          fontSize: "10px",
+          color: "#ffd24d",
+          stroke: "#081009",
+          strokeThickness: 3
+        });
+    }
+
     const buttons = [];
 
     if (victory) {
@@ -1304,6 +1346,7 @@ MB.Scenes.Level = new Phaser.Class({
     const parts = [dim, panel, title, subtitle, stats, note];
     if (prizeLabel) parts.push(prizeLabel);
     if (prizeStars) parts.push(prizeStars);
+    if (unlockNote) parts.push(unlockNote);
     this.overlay.add(parts.concat(buttons));
   },
 

@@ -40,6 +40,8 @@ uses the base stats, so it is the easiest place to learn the game.
      blast that instantly defeats nearby enemies.
    - **Flamethrower** - 4 supply, 90 HP, 13 DPS. A slow, short-range flame jet
      with a 35-pixel blast, available in every level.
+   - **Rocketeer** - 5 supply, 100 HP, 24 DPS. **Locked until you take a
+     treasure.** Fires homing rockets with a 120-pixel blast.
 
    Musketeer and Grenadier hits fill the **POWER** meter in the top bar. When it
    reaches 100%, the army automatically fires a POWER BARRAGE at every enemy

@@ -8,7 +8,8 @@ MB.save = (function () {
   function defaults() {
     return {
       version: 1,
-      levels: {}
+      levels: {},
+      unlocks: []
     };
   }
 
@@ -30,7 +31,14 @@ MB.save = (function () {
           }
         });
       }
-      return { version: 1, levels: levels };
+      const unlocks = [];
+      if (Array.isArray(data.unlocks)) {
+        const known = MB.config.UNIT_ORDER || [];
+        data.unlocks.forEach(function (kind) {
+          if (known.indexOf(kind) >= 0 && unlocks.indexOf(kind) < 0) unlocks.push(kind);
+        });
+      }
+      return { version: 1, levels: levels, unlocks: unlocks };
     } catch (e) {
       return defaults();
     }
@@ -76,8 +84,16 @@ MB.save = (function () {
       // Keep the best result, so replaying a level never loses stars.
       stars: Math.max(clampStars(prev.stars), clampStars(stars))
     };
+    // The treasure unlocks a new soldier with a new weapon.
+    const reward = MB.config.TREASURE_UNLOCK;
+    if (reward && state.unlocks.indexOf(reward) < 0) state.unlocks.push(reward);
     save(state);
     return state;
+  }
+
+  function isUnlocked(state, kind) {
+    if (!MB.config.TREASURE_UNLOCK || kind !== MB.config.TREASURE_UNLOCK) return true;
+    return !!(state && state.unlocks && state.unlocks.indexOf(kind) >= 0);
   }
 
   return {
@@ -87,6 +103,7 @@ MB.save = (function () {
     clear: clear,
     isComplete: isComplete,
     getStars: getStars,
-    completeLevel: completeLevel
+    completeLevel: completeLevel,
+    isUnlocked: isUnlocked
   };
 })();

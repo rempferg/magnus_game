@@ -579,6 +579,13 @@ MB.art = (function () {
       g.fillTriangle(size + 16, 0, size + 6, -4, size + 6, 4);
       g.fillStyle(0xffd24d, 1);
       g.fillCircle(size + 19, 0, 2.5);
+    } else if (kind === "rocketeer") {
+      g.fillStyle(0x4fc3c7, 1);
+      g.fillRect(size * 0.3, -size * 0.55, size * 1.1, size * 1.1);
+      g.fillStyle(0x2a8f94, 1);
+      g.fillCircle(size + 8, 0, size * 0.4);
+      g.fillStyle(0xfff2b0, 1);
+      g.fillTriangle(size + 14, 0, size + 8, -3, size + 8, 3);
     } else {
       g.lineStyle(4, 0x5a3f2a, 1);
       g.lineBetween(size * 0.4, 0, size + 10, 0);
@@ -654,6 +661,13 @@ MB.art = (function () {
       g.fillTriangle(size + 17, 0, size + 8, -4, size + 8, 4);
       g.fillStyle(0xffd24d, 1);
       g.fillCircle(size + 20, 0, 2.2);
+    } else if (kind === "rocketeer") {
+      g.fillStyle(0x4fc3c7, 1);
+      g.fillRect(-size * 0.9, -size * 0.45, size * 0.75, size * 0.9);
+      g.fillStyle(0x2a8f94, 1);
+      g.fillRect(size * 0.35, -size * 0.55, size * 1.25, size * 1.1);
+      g.fillStyle(0xfff2b0, 1);
+      g.fillTriangle(size + 18, 0, size + 10, -4, size + 10, 4);
     } else {
       const barrel = kind === "musketeer" ? size + 22 : size + 12;
       g.lineStyle(3, 0x2a1a10, 1);
@@ -735,6 +749,13 @@ MB.art = (function () {
       g.fillTriangle(size + 18, 0, size + 8, -5, size + 8, 5);
       g.fillStyle(0xffd24d, 1);
       g.fillCircle(size + 21, 0, 2.4);
+    } else if (kind === "rocketeer") {
+      g.fillStyle(0x4fc3c7, 1);
+      g.fillRect(-size * 0.95, -size * 0.55, size * 0.8, size * 1.1);
+      g.fillStyle(0x2a8f94, 1);
+      g.fillRect(size * 0.35, -size * 0.6, size * 1.35, size * 1.2);
+      g.fillStyle(0xfff2b0, 1);
+      g.fillTriangle(size + 19, 0, size + 10, -5, size + 10, 5);
     } else {
       g.fillStyle(accent, 1);
       g.fillRect(size * 0.55, -size * 0.8, 5, size * 1.6);
@@ -945,6 +966,43 @@ MB.art = (function () {
     return container;
   }
 
+  function drawRocket(scene, x, y) {
+    const container = scene.add.container(x, y);
+    const g = scene.add.graphics();
+    g.fillStyle(0xffa23c, 0.95);
+    g.fillTriangle(-9, -2, -17, 0, -9, 2);
+    g.fillStyle(0xfff2b0, 1);
+    g.fillTriangle(-9, -1, -13, 0, -9, 1);
+    g.fillStyle(0x4fc3c7, 1);
+    g.fillTriangle(-8, -2.5, -4, -6, -3, -2.5);
+    g.fillTriangle(-8, 2.5, -4, 6, -3, 2.5);
+    g.fillStyle(0xe8f6f6, 1);
+    g.fillRect(-9, -2.5, 15, 5);
+    g.fillStyle(0x2a8f94, 1);
+    g.fillRect(-9, -2.5, 4, 5);
+    g.fillStyle(0xffffff, 1);
+    g.fillTriangle(6, -2.5, 12, 0, 6, 2.5);
+    container.add(g);
+    return container;
+  }
+
+  function drawRocketBlast(scene, x, y) {
+    const container = scene.add.container(x, y);
+    const g = scene.add.graphics();
+    g.fillStyle(0x4fc3c7, 0.35);
+    g.fillCircle(0, 0, 30);
+    g.fillStyle(0xff8a2f, 0.8);
+    g.fillCircle(0, 0, 20);
+    g.fillStyle(0xffd24d, 0.95);
+    g.fillCircle(-4, -2, 11);
+    g.fillStyle(0xfffbe0, 1);
+    g.fillCircle(-6, -3, 5);
+    g.lineStyle(2, 0xd6ffff, 0.9);
+    g.strokeCircle(0, 0, 34);
+    container.add(g);
+    return container;
+  }
+
   function drawNuke(scene, x, y) {
     const container = scene.add.container(x, y);
     const g = scene.add.graphics();
@@ -1051,6 +1109,8 @@ MB.art = (function () {
     drawMine: drawMine,
     drawFlame: drawFlame,
     drawFlameBurst: drawFlameBurst,
+    drawRocket: drawRocket,
+    drawRocketBlast: drawRocketBlast,
     drawNuke: drawNuke,
     drawNuclearBlast: drawNuclearBlast,
     drawExplosion: drawExplosion,

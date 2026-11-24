@@ -11,7 +11,7 @@ MB.config = (function () {
   // Appended to asset URLs by the Dockerfile. Bump it whenever js/, style.css
   // or fonts/ change, because those files are served with a one-year immutable
   // cache while index.html itself is never cached.
-  const VERSION = "V20";
+  const VERSION = "V21";
 
   // Supply is earned by answering German questions. Units spend it, so a unit
   // that costs 3 needs three correct answers before it can be trained.
@@ -103,12 +103,33 @@ MB.config = (function () {
       projectileSpeed: 400,
       splash: 35,
       desc: "Short-range flame jet that burns clustered enemies."
+    },
+    rocketeer: {
+      id: "rocketeer",
+      name: "Rocketeer",
+      cost: 5,
+      hp: 100,
+      damage: 22,
+      fireRate: 900,
+      range: 230,
+      speed: 58,
+      size: 10,
+      color: 0x4fc3c7,
+      accent: 0xd6ffff,
+      projectile: "rocket",
+      projectileSpeed: 380,
+      splash: 120,
+      desc: "Treasure reward. Fires homing rockets with a wide blast."
     }
   };
 
   const UNIT_ORDER = [
-    "landsknecht", "archer", "musketeer", "grenadier", "flamethrower"
+    "landsknecht", "archer", "musketeer", "grenadier", "flamethrower",
+    "rocketeer"
   ];
+
+  // Taking any treasure unlocks this soldier for all later runs.
+  const TREASURE_UNLOCK = "rocketeer";
 
   const DEFENSES = {
     tower: {
@@ -243,6 +264,7 @@ MB.config = (function () {
     HEIGHT: HEIGHT,
     FONT: FONT,
     VERSION: VERSION,
+    TREASURE_UNLOCK: TREASURE_UNLOCK,
     POWER: POWER,
     STARS: STARS,
     MINES: MINES,

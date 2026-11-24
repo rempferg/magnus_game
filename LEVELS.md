@@ -261,6 +261,7 @@ Unit and enemy stats are in `js/config.js`:
 - `MB.config.UNITS.archer`
 - `MB.config.UNITS.musketeer`
 - `MB.config.UNITS.grenadier`
+- `MB.config.UNITS.rocketeer`
 - `MB.config.DEFENSES.tower`
 - `MB.config.DEFENSES.ballista`
 - `MB.config.DEFENSES.bandit`
@@ -271,3 +272,11 @@ Unit and enemy stats are in `js/config.js`:
 `cost` is measured in correct German answers. A map's difficulty comes from the
 number and mix of enemies, their distance from the road, and the amount of
 supply a player is willing to earn before attacking.
+
+## Treasure unlock
+
+Taking the treasure in any level permanently unlocks the **Rocketeer** for all
+runs, saved in localStorage with the level stars. Before the first treasure the
+unit card in the HUD is marked `LOCKED`; afterward the Rocketeer can be bought
+with supply like any other soldier. The unlock id lives in
+`MB.config.TREASURE_UNLOCK`; `MB.save.isUnlocked()` gates training.
