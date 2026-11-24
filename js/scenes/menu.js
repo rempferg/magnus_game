@@ -17,7 +17,7 @@ MB.Scenes.Menu = new Phaser.Class({
     if (levels.length) MB.art.drawMenuBackdrop(this, levels[0]);
     else this.add.rectangle(C.WIDTH / 2, C.HEIGHT / 2, C.WIDTH, C.HEIGHT, 0x07120a, 1);
 
-    MB.ui.addText(this, C.WIDTH / 2, 112, "GERMAN ATTACK", {
+    MB.ui.addText(this, C.WIDTH / 2, 112, C.TITLE.toUpperCase(), {
       fontSize: "38px",
       color: "#ffd24d",
       fontStyle: "bold",

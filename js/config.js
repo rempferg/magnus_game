@@ -11,7 +11,7 @@ MB.config = (function () {
   // Appended to asset URLs by the Dockerfile. Bump it whenever js/, style.css
   // or fonts/ change, because those files are served with a one-year immutable
   // cache while index.html itself is never cached.
-  const VERSION = "V16";
+  const VERSION = "V17";
 
   // Supply is earned by answering German questions. Units spend it, so a unit
   // that costs 3 needs three correct answers before it can be trained.
@@ -230,7 +230,7 @@ MB.config = (function () {
     NUKES: NUKES,
     ENEMY_SCALING: ENEMY_SCALING,
     enemyScale: enemyScale,
-    TITLE: "German Attack",
+    TITLE: "Magnus' Game",
     SUPPLY_PER_ANSWER: SUPPLY_PER_ANSWER,
     UNITS: UNITS,
     UNIT_ORDER: UNIT_ORDER,

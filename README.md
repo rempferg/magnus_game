@@ -1,4 +1,4 @@
-# German Attack
+# Magnus' Game
 
 A top-down German-learning campaign game built with Phaser 3.
 
@@ -88,7 +88,7 @@ For that to work, the repository's bare repo on the preview host needs the hook:
 
 ```sh
 ln -sf ~/web-app-deployment/post-receive_web-app-repos \
-    ~/german_attack.git/hooks/post-receive
+    ~/magnus_game.git/hooks/post-receive
 ```
 
 ## Project layout
