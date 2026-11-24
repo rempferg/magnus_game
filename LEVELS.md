@@ -199,10 +199,10 @@ A unit in `MB.config.UNITS` can define its own weapon:
   flame jets with a small `splash`.
 - `projectileSpeed` sets the travel speed of its shots.
 - `splash` sets the explosion radius in canvas pixels; every enemy inside it
-  takes the shot's damage. The Grenadier uses 2000, the Archer's mine uses
-  1,000,000 and the Musketeer's nuke uses 5,000,000 — all reach across the whole
-  960x540 map. The drawn explosion is capped at 140 px so huge blasts stay
-  readable; nukes get a mushroom cloud, screen shake and a white flash.
+  takes the shot's damage. The Grenadier uses 600, the Archer's mine uses 400,
+  the flame jet uses 35 and the Musketeer's nuke uses 5,000,000. The drawn
+  explosion is capped at 140 px so huge blasts stay readable; nukes get a
+  mushroom cloud, screen shake and a white flash.
 - `instantKill: true` makes a grenade set every enemy inside the blast to 0 HP
   instead of applying the damage value. The Grenadier uses this.
 - `mineBlasts` (used with `projectile: "mine"`) is the number of blasts needed
@@ -216,8 +216,13 @@ flamethrower while other levels keep its landmine.
 
 Nukes defeat the two closest enemies in the blast outright (see
 `MB.config.NUKES.KILLS`) and damage the rest. Clubmen fire rapid minigun
-bullets, Archers drop landmines, Slingers breathe fire and Grenadiers lob
-grenades. Other units keep the level's `playerProjectile` style.
+bullets, Archers drop landmines, Grenadiers lob grenades, and the Flamethrower
+soldier plus the Stone Age Slinger breathe fire. Other units keep the level's
+`playerProjectile` style.
+
+Only the player's new weapons were weakened: the minigun now deals 2 damage per
+shot, the mine reaches 400 px instead of the whole map, the grenade 600 px, and
+the nuke 30 damage per blast. Enemy weapons are unchanged.
 
 ## Power meter
 

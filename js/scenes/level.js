@@ -229,19 +229,19 @@ MB.Scenes.Level = new Phaser.Class({
       origin: 0
     }));
 
-    const cardX = [86, 236, 386, 536];
+    const cardX = [70, 188, 306, 424, 542];
     MB.config.UNIT_ORDER.forEach(function (kind, i) {
       const def = this.unitDef(kind);
       const affordable = this.supply >= def.cost;
       const dps = Math.round(def.damage / def.fireRate * 1000);
-      hud.add(MB.ui.addButton(this, cardX[i], 490, 140, 52,
+      hud.add(MB.ui.addButton(this, cardX[i], 490, 116, 52,
         this.unitName(kind).toUpperCase() + "\n" +
-        def.cost + " SUPPLY · " + def.hp + " HP\n" +
-        dps + " DPS · " + this.army[kind] + " READY", {
+        def.cost + " SUP · " + def.hp + " HP\n" +
+        dps + " DPS · " + this.army[kind] + " RDY", {
           fill: affordable ? 0x2a5a8f : 0x333d3a,
           fillOver: affordable ? 0x3b74b3 : 0x333d3a,
           fontSize: "7px",
-          lineSpacing: 4,
+          lineSpacing: 3,
           textColor: affordable ? "#ffffff" : "#84918a",
           onClick: function () {
             this.trainUnit(kind);

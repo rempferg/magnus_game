@@ -11,7 +11,7 @@ MB.config = (function () {
   // Appended to asset URLs by the Dockerfile. Bump it whenever js/, style.css
   // or fonts/ change, because those files are served with a one-year immutable
   // cache while index.html itself is never cached.
-  const VERSION = "V17";
+  const VERSION = "V18";
 
   // Supply is earned by answering German questions. Units spend it, so a unit
   // that costs 3 needs three correct answers before it can be trained.
@@ -23,8 +23,8 @@ MB.config = (function () {
       name: "Landsknecht",
       cost: 1,
       hp: 140,
-      damage: 3,
-      fireRate: 110,
+      damage: 2,
+      fireRate: 140,
       range: 165,
       speed: 62,
       size: 10,
@@ -48,16 +48,16 @@ MB.config = (function () {
       accent: 0xe6ffd9,
       projectile: "mine",
       projectileSpeed: 320,
-      splash: 1000000,
+      splash: 400,
       mineBlasts: 10,
-      desc: "Fragile. Drops map-wide mines that defeat enemies in ten blasts."
+      desc: "Fragile. Drops mines that defeat nearby enemies in ten blasts."
     },
     musketeer: {
       id: "musketeer",
       name: "Musketeer",
       cost: 4,
       hp: 85,
-      damage: 60,
+      damage: 30,
       fireRate: 2500,
       range: 260,
       speed: 60,
@@ -83,13 +83,32 @@ MB.config = (function () {
       accent: 0xffe2b0,
       projectile: "grenade",
       projectileSpeed: 250,
-      splash: 2000,
+      splash: 600,
       instantKill: true,
-      desc: "Huge blast that instantly defeats every enemy on the map."
+      desc: "Big blast that instantly defeats nearby enemies."
+    },
+    flamethrower: {
+      id: "flamethrower",
+      name: "Flamethrower",
+      cost: 4,
+      hp: 90,
+      damage: 3,
+      fireRate: 160,
+      range: 140,
+      speed: 66,
+      size: 10,
+      color: 0xe07a3c,
+      accent: 0xffe2b8,
+      projectile: "flame",
+      projectileSpeed: 400,
+      splash: 35,
+      desc: "Short-range flame jet that burns clustered enemies."
     }
   };
 
-  const UNIT_ORDER = ["landsknecht", "archer", "musketeer", "grenadier"];
+  const UNIT_ORDER = [
+    "landsknecht", "archer", "musketeer", "grenadier", "flamethrower"
+  ];
 
   const DEFENSES = {
     tower: {
@@ -182,20 +201,21 @@ MB.config = (function () {
     TWO_STAR_RATIO: 0.5
   };
 
-  // The Archer drops landmines instead of arrows. A mine reaches the whole map
-  // and removes one tenth of an enemy's HP per blast, so ten blasts defeat it.
+  // The Archer drops landmines instead of arrows. A mine removes one tenth of
+  // an enemy's HP per blast, so ten blasts defeat it.
   const MINES = {
-    RADIUS: 1000000,
+    RADIUS: 400,
     BLASTS_TO_KILL: 10
   };
 
-  // The Stone Age Slinger trades the mine for a short-range flamethrower.
+  // Short-range flame jets used by the Flamethrower soldier and the Stone Age
+  // Slinger.
   const FLAMES = {
     RADIUS: 30
   };
 
-  // The Musketeer fires nuclear missiles: a huge blast that damages every
-  // enemy but does not kill outright, so several hits are needed.
+  // The Musketeer fires nuclear missiles: a huge blast that defeats the two
+  // closest enemies and damages the rest, so several hits are needed.
   const NUKES = {
     RADIUS: 5000000,
     KILLS: 2

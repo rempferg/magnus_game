@@ -561,6 +561,15 @@ MB.art = (function () {
       g.lineBetween(size + 9, -size * 0.35, size + 6, -size * 0.9);
       g.fillStyle(0xffb36b, 1);
       g.fillCircle(size + 6, -size * 0.9, 2);
+    } else if (kind === "flamethrower") {
+      g.fillStyle(0x8a5a2a, 1);
+      g.fillCircle(-size * 0.55, -size * 0.3, size * 0.45);
+      g.lineStyle(4, 0x6b4a2c, 1);
+      g.lineBetween(size * 0.35, 0, size + 14, 0);
+      g.fillStyle(0xff7a2f, 1);
+      g.fillTriangle(size + 16, 0, size + 6, -4, size + 6, 4);
+      g.fillStyle(0xffd24d, 1);
+      g.fillCircle(size + 19, 0, 2.5);
     } else {
       g.lineStyle(4, 0x5a3f2a, 1);
       g.lineBetween(size * 0.4, 0, size + 10, 0);
@@ -618,6 +627,15 @@ MB.art = (function () {
       g.lineBetween(size + 8, -size * 0.3, size + 13, -size * 0.75);
       g.fillStyle(0xffd24d, 1);
       g.fillCircle(size + 13, -size * 0.75, 2);
+    } else if (kind === "flamethrower") {
+      g.fillStyle(0xb03024, 1);
+      g.fillRect(-size * 0.9, -size * 0.5, size * 0.7, size);
+      g.lineStyle(3, 0x2a1a10, 1);
+      g.lineBetween(size * 0.45, 0, size + 15, 0);
+      g.fillStyle(0xff8a2f, 1);
+      g.fillTriangle(size + 17, 0, size + 8, -4, size + 8, 4);
+      g.fillStyle(0xffd24d, 1);
+      g.fillCircle(size + 20, 0, 2.2);
     } else {
       const barrel = kind === "musketeer" ? size + 22 : size + 12;
       g.lineStyle(3, 0x2a1a10, 1);
@@ -681,6 +699,15 @@ MB.art = (function () {
       g.lineBetween(size + 8, -size * 0.35, size + 5, -size * 0.85);
       g.fillStyle(0xffb36b, 1);
       g.fillCircle(size + 5, -size * 0.85, 2);
+    } else if (kind === "flamethrower") {
+      g.fillStyle(0xb03024, 1);
+      g.fillRect(-size * 0.95, -size * 0.6, size * 0.75, size * 1.2);
+      g.fillStyle(0x2a1a10, 1);
+      g.fillRect(size * 0.4, -3, size * 1.3, 6);
+      g.fillStyle(0xff7a2f, 1);
+      g.fillTriangle(size + 18, 0, size + 8, -5, size + 8, 5);
+      g.fillStyle(0xffd24d, 1);
+      g.fillCircle(size + 21, 0, 2.4);
     } else {
       g.fillStyle(accent, 1);
       g.fillRect(size * 0.55, -size * 0.8, 5, size * 1.6);
